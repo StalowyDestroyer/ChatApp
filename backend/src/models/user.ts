@@ -1,4 +1,11 @@
-import { Column, DataType, Table, Model } from "sequelize-typescript";
+import {
+  Column,
+  DataType,
+  Table,
+  Model,
+  BeforeCreate,
+} from "sequelize-typescript";
+import bcrypt from "bcryptjs";
 @Table({
   tableName: "user",
   timestamps: true,
@@ -15,6 +22,13 @@ export class User extends Model<User> {
     type: DataType.STRING,
   })
   password!: string;
+  @BeforeCreate
+  static async hashPassword(user: User) {
+    user.password = await bcrypt.hash(user.password, await bcrypt.genSalt(10));
+  }
+  async checkPassword(password: string): Promise<boolean> {
+    return bcrypt.compare(password, this.password);
+  }
 
   @Column({
     allowNull: false,
@@ -35,7 +49,7 @@ export class User extends Model<User> {
   surname!: string;
 
   @Column({
-    allowNull: false,
+    allowNull: true,
     type: DataType.STRING,
   })
   profilePicturePath!: string;
