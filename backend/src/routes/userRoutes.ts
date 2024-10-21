@@ -3,7 +3,7 @@ import { User } from "../models/user";
 
 const router = Router();
 
-router.post("/", async (req: Request, res: Response) => {
+router.post("/register", async (req: Request, res: Response) => {
   const user = await User.create(req.body);
   res.status(201).json(user);
 });
