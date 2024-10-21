@@ -1,13 +1,14 @@
 import { Sequelize } from "sequelize-typescript";
+import { User } from "./models/user";
 
 const sequelize = new Sequelize({
   dialect: "mysql",
   host: "localhost",
   username: "root",
   password: "",
-  database: "tescior",
+  database: "chatapp",
   logging: console.log,
-  models: [],
+  models: [User],
 });
 
 export default sequelize;
