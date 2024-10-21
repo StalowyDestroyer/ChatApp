@@ -1,0 +1,18 @@
+.main_container {
+  height: 100vh;
+  background: linear-gradient(90deg, rgba(19,19,19,1) 0%, rgba(32,35,42,1) 100%);
+}
+
+.login_image {
+  width: 60px;
+  height: 60px;
+  top: -0px;
+}
+
+.form_container {
+  background: rgba(156, 149, 149, 0.4);
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(9.5px);
+  -webkit-backdrop-filter: blur(9.5px);
+  border: 1px solid rgba(156, 149, 149, 1);
+}
