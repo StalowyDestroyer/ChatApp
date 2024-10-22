@@ -1,18 +1,18 @@
 import { faEnvelope, faLock, faUser } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useState } from "react";
-import { UserFormData } from "../../../types";
+import { ApiErrorObject, UserFormData } from "../../types/types";
 import { useMutation } from "react-query";
 import { registerUser } from "../../services/userService";
+import { validateUserForRegister } from "../../validators/userValidation";
+import { AxiosError } from "axios";
 
 export const Register = () => {
   const [registerData, setRegisterData] = useState<UserFormData>({
     username: "",
-    name: "",
     email: "",
     password: "",
     passwordCheck: "",
-    surname: "",
   });
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -24,14 +24,15 @@ export const Register = () => {
   }
 
   async function submitRegisterForm() {
-    await registerUserAsync();
+    if (await validateUserForRegister(registerData)) await registerUserAsync();
   }
 
   const { mutateAsync: registerUserAsync } = useMutation(
     async () => await registerUser(registerData),
     {
       onSuccess: (res) => console.log(res),
-      onError: () => console.log("error"),
+      onError: (error: AxiosError<ApiErrorObject>) =>
+        console.log(error.response?.data.message),
     }
   );
 
@@ -54,36 +55,6 @@ export const Register = () => {
                 type="text"
                 value={registerData.username}
                 name="username"
-                className="form-control fs-5"
-                onChange={(e) => handleChange(e)}
-              />
-            </div>
-          </div>
-          <div>
-            <label className="fs-5 p-1">Imię</label>
-            <div className="input-group">
-              <span className="input-group-text">
-                <FontAwesomeIcon icon={faUser} />
-              </span>
-              <input
-                type="text"
-                value={registerData.name}
-                name="name"
-                className="form-control fs-5"
-                onChange={(e) => handleChange(e)}
-              />
-            </div>
-          </div>
-          <div>
-            <label className="fs-5 p-1">Nazwisko</label>
-            <div className="input-group">
-              <span className="input-group-text">
-                <FontAwesomeIcon icon={faUser} />
-              </span>
-              <input
-                type="text"
-                name="surname"
-                value={registerData.surname}
                 className="form-control fs-5"
                 onChange={(e) => handleChange(e)}
               />

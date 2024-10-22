@@ -1,7 +1,5 @@
 export interface UserFormData {
   username: string;
-  name: string;
-  surname: string;
   email: string;
   password: string;
   passwordCheck: string;
@@ -14,11 +12,13 @@ export interface LoginFormData {
 
 export interface UserData {
   id: number;
-  name: string;
-  surname: string;
   email: string;
   password: string;
   profilePicturePath: string | null;
   createdAt: Date;
   updatedAt: Date;
+}
+
+export interface ApiErrorObject {
+  message: string;
 }

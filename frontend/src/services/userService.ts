@@ -1,4 +1,4 @@
-import { UserData, UserFormData } from "../../types";
+import { UserData, UserFormData } from "../types/types";
 import apiClient from "../configs/apiClient";
 
 export const registerUser = async (data: UserFormData): Promise<UserData> => {
