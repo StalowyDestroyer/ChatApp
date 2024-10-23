@@ -10,6 +10,19 @@ Content-Type: application/json
     "surname":"surname"
 }
 
-###
+### Pobieranie użytkownika o id = 1
 GET http://localhost:3000/api/v1/user/1
+Content-Type: application/json
+
+### Logowanie użytkownika
+POST http://localhost:3000/api/v1/user/login
+Content-Type: application/json
+
+{
+    "password": "password123",
+    "email": "example@example.com"
+}
+
+### wylogowanie
+POST http://localhost:3000/api/v1/user/logout
 Content-Type: application/json
