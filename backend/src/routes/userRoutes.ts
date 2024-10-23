@@ -1,16 +1,9 @@
-import { Router, Response, Request } from "express";
-import { User } from "../models/user";
+import { Router } from "express";
+import { getUserById, registerUser } from "../repositories/userRepository";
 
 const router = Router();
 
-router.post("/register", async (req: Request, res: Response) => {
-  const user = await User.create(req.body);
-  res.status(201).json(user);
-});
-
-router.get("/:id", async (req: Request, res: Response) => {
-  const user = await User.findByPk(req.params.id);
-  res.status(200).json(user);
-});
+router.post("/register", registerUser);
+router.get("/:id", getUserById);
 
 export default router;

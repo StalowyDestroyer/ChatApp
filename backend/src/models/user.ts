@@ -37,20 +37,14 @@ export class User extends Model<User> {
   email!: string;
 
   @Column({
-    allowNull: false,
+    allowNull: true,
     type: DataType.STRING,
   })
-  name!: string;
-
-  @Column({
-    allowNull: false,
-    type: DataType.STRING,
-  })
-  surname!: string;
+  profilePicturePath!: string;
 
   @Column({
     allowNull: true,
     type: DataType.STRING,
   })
-  profilePicturePath!: string;
+  refreshToken!: string;
 }
