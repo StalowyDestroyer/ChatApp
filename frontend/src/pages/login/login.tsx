@@ -2,9 +2,10 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import "./login.css";
 import { faEnvelope, faLock, faUser } from "@fortawesome/free-solid-svg-icons";
 import { useState } from "react";
-import { LoginFormData } from "../../types/types";
+import { ApiMessage, LoginFormData } from "../../types/types";
 import { useMutation } from "react-query";
 import { loginUser } from "../../services/userService";
+import { AxiosError } from "axios";
 
 export const Login = () => {
   const [loginData, setLoginData] = useState<LoginFormData>({
@@ -21,7 +22,12 @@ export const Login = () => {
   }
 
   const { mutateAsync: loginAsync } = useMutation(
-    async () => await loginUser(loginData)
+    async () => await loginUser(loginData),
+    {
+      onSuccess: (res) => console.log(res),
+      onError: (res: AxiosError<ApiMessage>) =>
+        console.log(res.response?.data.message),
+    }
   );
 
   async function loginButtonClick() {

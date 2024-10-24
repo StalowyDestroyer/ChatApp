@@ -1,21 +1,17 @@
 ### Dodawanie nowego użytkownika
-POST http://localhost:3000/api/v1/user/register
+POST http://localhost:3000/api/v1/auth/register
 Content-Type: application/json
 
 {
-    "username": "exampleUser",
+    "authname": "exampleauth",
     "password": "password123",
     "email": "example@example.com",
     "name":"name",
     "surname":"surname"
 }
 
-### Pobieranie użytkownika o id = 1
-GET http://localhost:3000/api/v1/user/1
-Content-Type: application/json
-
 ### Logowanie użytkownika
-POST http://localhost:3000/api/v1/user/login
+POST http://localhost:3000/api/v1/auth/login
 Content-Type: application/json
 
 {
@@ -24,5 +20,9 @@ Content-Type: application/json
 }
 
 ### wylogowanie
-POST http://localhost:3000/api/v1/user/logout
+POST http://localhost:3000/api/v1/auth/logout
+Content-Type: application/json
+
+### Wydłużenie tokenu
+POST http://localhost:3000/api/v1/auth/refresh-token
 Content-Type: application/json

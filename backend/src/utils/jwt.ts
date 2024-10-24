@@ -13,7 +13,7 @@ export const generateRefreshToken = (user: User) => {
   return jwt.sign({ id: user.id }, REFRESH_TOKEN_SECRET, { expiresIn: "7d" });
 };
 
-export const verifyToken = (
+export const verifyTokenForAccess = (
   req: Request,
   res: Response,
   next: NextFunction
@@ -32,5 +32,17 @@ export const verifyToken = (
     }
     req.user = user;
     next();
+  });
+};
+
+export const verifyRefreshToken = (refreshToken: string) => {
+  return new Promise((resolve, reject) => {
+    jwt.verify(refreshToken, REFRESH_TOKEN_SECRET, (err, user) => {
+      if (err) {
+        reject("Invalid refresh token");
+      } else {
+        resolve(user);
+      }
+    });
   });
 };

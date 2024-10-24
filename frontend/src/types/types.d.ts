@@ -19,6 +19,6 @@ export interface UserData {
   updatedAt: Date;
 }
 
-export interface ApiErrorObject {
+export interface ApiMessage {
   message: string;
 }
