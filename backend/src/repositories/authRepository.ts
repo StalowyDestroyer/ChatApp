@@ -1,4 +1,4 @@
-import { Response, Request } from "express";
+import { Response, Request, CookieOptions } from "express";
 import { User } from "../models/user";
 import {
   generateAccessToken,
@@ -6,13 +6,18 @@ import {
   verifyRefreshToken,
 } from "../utils/jwt";
 
+const cookieParams: CookieOptions = {
+  httpOnly: true,
+  sameSite: "strict",
+};
+
 export const login = async (req: Request, res: Response) => {
   try {
     const { email, password } = req.body;
     const user = await User.findOne({ where: { email: email } });
 
     if (!user || !(await user.checkPassword(password))) {
-      res.status(401).json({ message: "Invalid credentials" });
+      res.status(401).json({ message: "Niepoprawne dane uwierzytelniające" });
       return;
     }
 
@@ -22,8 +27,8 @@ export const login = async (req: Request, res: Response) => {
     user.refreshToken = refreshToken;
     await user.save();
 
-    res.cookie("accessToken", accessToken, { httpOnly: true });
-    res.cookie("refreshToken", refreshToken, { httpOnly: true });
+    res.cookie("accessToken", accessToken, cookieParams);
+    res.cookie("refreshToken", refreshToken, cookieParams);
     res.status(200).json({ message: "Logged in" });
   } catch (error) {
     res.status(500).json({ message: error });
@@ -35,7 +40,7 @@ export const logout = async (req: Request, res: Response) => {
     const { refreshToken } = req.cookies;
 
     if (!refreshToken) {
-      res.status(400).json({ message: "No refresh token found" });
+      res.status(400).json({ message: "Nie znaleziono tokenu odświeżania" });
       return;
     }
 
@@ -47,9 +52,9 @@ export const logout = async (req: Request, res: Response) => {
 
     res.clearCookie("accessToken");
     res.clearCookie("refreshToken");
-    res.status(200).json({ message: "Logged out successfully" });
+    res.status(200).json({ message: "Pomyślnie wylogowano" });
   } catch (error) {
-    res.status(500).json({ message: "Server error" });
+    res.status(500).json({ message: "Wewnętrzny błąd serwera" });
   }
 };
 
@@ -71,7 +76,7 @@ export const registerUser = async (req: Request, res: Response) => {
     const { password, ...userWithoutPassword } = createdUser.dataValues;
     res.status(201).json(userWithoutPassword);
   } catch (error) {
-    res.status(500).json({ message: "Internal server error" });
+    res.status(500).json({ message: "Wewnętrzny błąd serwera" });
   }
 };
 
@@ -80,23 +85,34 @@ export const refreshToken = async (req: Request, res: Response) => {
     const { refreshToken } = req.cookies;
 
     if (!refreshToken) {
-      res.status(401).json({ message: "Refresh token not provided" });
+      res
+        .status(401)
+        .json({ message: "Token odświeżania nie został dostarczony" });
+      return;
+    }
+
+    const decoded = await verifyRefreshToken(refreshToken);
+    if (!decoded) {
+      res
+        .status(403)
+        .json({ message: "Token odświeżania jest nieprawidłowy lub wygasł" });
       return;
     }
 
     const user = await User.findOne({ where: { refreshToken } });
-
     if (!user) {
-      res.status(403).json({ message: "Invalid refresh token" });
+      res.status(403).json({ message: "Niepoprawny token odświeżania" });
       return;
     }
 
     await verifyRefreshToken(refreshToken);
     const newAccessToken = generateAccessToken(user);
 
-    res.cookie("accessToken", newAccessToken, { httpOnly: true });
-    res.status(200).json({ message: "Access token refreshed successfully" });
+    res.cookie("accessToken", newAccessToken, cookieParams);
+    res
+      .status(200)
+      .json({ message: "Token odświeżania został pomyślnie przeładowany" });
   } catch (error) {
-    res.status(500).json({ message: "Server error" });
+    res.status(500).json({ message: "Wewnętrzny błąd serwera" });
   }
 };

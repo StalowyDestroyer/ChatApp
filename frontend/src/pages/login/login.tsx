@@ -4,10 +4,12 @@ import { faEnvelope, faLock, faUser } from "@fortawesome/free-solid-svg-icons";
 import { useState } from "react";
 import { ApiMessage, LoginFormData } from "../../types/types";
 import { useMutation } from "react-query";
-import { loginUser } from "../../services/userService";
 import { AxiosError } from "axios";
+import { useNavigate } from "react-router-dom";
+import { loginUser } from "../../services/authService";
 
 export const Login = () => {
+  const navigate = useNavigate();
   const [loginData, setLoginData] = useState<LoginFormData>({
     email: "",
     password: "",
@@ -24,7 +26,7 @@ export const Login = () => {
   const { mutateAsync: loginAsync } = useMutation(
     async () => await loginUser(loginData),
     {
-      onSuccess: (res) => console.log(res),
+      onSuccess: () => navigate("/"),
       onError: (res: AxiosError<ApiMessage>) =>
         console.log(res.response?.data.message),
     }

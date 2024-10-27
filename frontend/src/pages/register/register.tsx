@@ -3,9 +3,9 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useState } from "react";
 import { ApiMessage, UserFormData } from "../../types/types";
 import { useMutation } from "react-query";
-import { registerUser } from "../../services/userService";
 import { validateUserForRegister } from "../../validators/userValidation";
 import { AxiosError } from "axios";
+import { registerUser } from "../../services/authService";
 
 export const Register = () => {
   const [registerData, setRegisterData] = useState<UserFormData>({

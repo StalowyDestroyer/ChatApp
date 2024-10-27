@@ -1,16 +1,20 @@
 import jwt from "jsonwebtoken";
 import { Request, Response, NextFunction } from "express";
 import { User } from "../models/user";
+import dotenv from "dotenv";
 
-const JWT_SECRET = "your_jwt_secret";
-const REFRESH_TOKEN_SECRET = "your_refresh_token_secret";
+dotenv.config();
 
 export const generateAccessToken = (user: User) => {
-  return jwt.sign({ id: user.id }, JWT_SECRET, { expiresIn: "15m" });
+  return jwt.sign({ id: user.id }, process.env.JWT_SECRET!, {
+    expiresIn: "15m",
+  });
 };
 
 export const generateRefreshToken = (user: User) => {
-  return jwt.sign({ id: user.id }, REFRESH_TOKEN_SECRET, { expiresIn: "7d" });
+  return jwt.sign({ id: user.id }, process.env.REFRESH_TOKEN_SECRET!, {
+    expiresIn: "7d",
+  });
 };
 
 export const verifyTokenForAccess = (
@@ -25,7 +29,7 @@ export const verifyTokenForAccess = (
     return;
   }
 
-  jwt.verify(token, JWT_SECRET, (err: any, user: any) => {
+  jwt.verify(token, process.env.JWT_SECRET!, (err: any, user: any) => {
     if (err) {
       res.status(403).json({ message: "Invalid token" });
       return;
@@ -37,7 +41,7 @@ export const verifyTokenForAccess = (
 
 export const verifyRefreshToken = (refreshToken: string) => {
   return new Promise((resolve, reject) => {
-    jwt.verify(refreshToken, REFRESH_TOKEN_SECRET, (err, user) => {
+    jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET!, (err, user) => {
       if (err) {
         reject("Invalid refresh token");
       } else {
