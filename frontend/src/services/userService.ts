@@ -1,7 +1,6 @@
-import { UserData, UserFormData } from "../types/types";
 import apiClient from "../configs/apiClient";
 
-export const registerUser = async (data: UserFormData): Promise<UserData> => {
-  const result = await apiClient.post("user/register", data);
+export const getUserById = async (id: number) => {
+  const result = await apiClient.get(`user/${id}`);
   return result.data;
 };

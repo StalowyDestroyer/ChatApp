@@ -6,7 +6,7 @@ export interface UserFormData {
 }
 
 export interface LoginFormData {
-  login: string;
+  email: string;
   password: string;
 }
 
@@ -19,6 +19,6 @@ export interface UserData {
   updatedAt: Date;
 }
 
-export interface ApiErrorObject {
+export interface ApiMessage {
   message: string;
 }

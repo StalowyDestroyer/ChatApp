@@ -1,11 +1,11 @@
 import { faEnvelope, faLock, faUser } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useState } from "react";
-import { ApiErrorObject, UserFormData } from "../../types/types";
+import { ApiMessage, UserFormData } from "../../types/types";
 import { useMutation } from "react-query";
-import { registerUser } from "../../services/userService";
 import { validateUserForRegister } from "../../validators/userValidation";
 import { AxiosError } from "axios";
+import { registerUser } from "../../services/authService";
 
 export const Register = () => {
   const [registerData, setRegisterData] = useState<UserFormData>({
@@ -31,7 +31,7 @@ export const Register = () => {
     async () => await registerUser(registerData),
     {
       onSuccess: (res) => console.log(res),
-      onError: (error: AxiosError<ApiErrorObject>) =>
+      onError: (error: AxiosError<ApiMessage>) =>
         console.log(error.response?.data.message),
     }
   );
