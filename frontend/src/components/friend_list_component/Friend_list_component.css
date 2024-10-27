@@ -1,0 +1,36 @@
+.home_friend{
+    height: 100px;
+    background-color: #2f333e;
+    border-radius: 25px;
+    width: 100%;
+    padding: 10px;
+}
+.home_friend:hover{
+    background-color: #979ca7;
+}
+.home_friend_image_container{
+    width: 100px;
+    height: 100%;
+    padding: 10px;
+}
+.home_friend img{
+    border-radius: 50%;
+    width: 75px !important;
+    height: 75px;
+}
+.home_badge{
+    border-radius: 50%;
+    aspect-ratio: 1/1;
+    width: max-content;
+    text-align: center;
+    justify-content: center;
+    display: flex;
+    align-items: center;
+    color: white;
+    font-size: 12px;
+    padding: 3px;
+    box-shadow: 2px 2px 5px 0px black;
+}
+.home_friend:hover *{
+    color: white;
+}
