@@ -28,7 +28,12 @@ export const getConversationWithMessages = async (
             {
               model: Message,
             },
-            { model: User },
+            {
+              model: User,
+              attributes: {
+                exclude: ["password", "refreshToken"],
+              },
+            },
           ],
         },
       ],

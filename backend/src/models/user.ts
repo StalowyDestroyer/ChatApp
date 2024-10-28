@@ -11,11 +11,6 @@ import { ConversationMessage } from "./conversationMessage";
 @Table({
   tableName: "user",
   timestamps: true,
-  defaultScope: {
-    attributes: {
-      exclude: ["password", "refreshToken"],
-    },
-  },
 })
 export class User extends Model {
   @Column({
