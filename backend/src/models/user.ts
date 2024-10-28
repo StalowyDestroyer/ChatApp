@@ -40,11 +40,11 @@ export class User extends Model<User> {
     allowNull: true,
     type: DataType.STRING,
   })
-  profilePicturePath!: string;
+  profilePicturePath!: string | null;
 
   @Column({
     allowNull: true,
     type: DataType.STRING,
   })
-  refreshToken!: string;
+  refreshToken!: string | null;
 }

@@ -1,9 +1,9 @@
 import { Router } from "express";
-import { getUserById, registerUser } from "../repositories/userRepository";
+import { getUserById } from "../repositories/userRepository";
+import { verifyTokenForAccess } from "../utils/jwt";
 
 const router = Router();
 
-router.post("/register", registerUser);
-router.get("/:id", getUserById);
+router.get("/:id", verifyTokenForAccess, getUserById);
 
 export default router;
