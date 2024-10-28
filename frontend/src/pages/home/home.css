@@ -1,23 +1,16 @@
 /*****************************
-
             main
-
 *****************************/
 
 .home_main_container{
     background-color: rgb(19, 19, 19);
-    min-height: 100vh;
+    height: 100vh;
 }
 .home_label{
     color: rgb(156, 168, 184);
 }
 .home_label_FS{
     font-size: 12px;
-}
-.home_center{
-    display: flex;
-    align-items: center;
-    justify-content: center;
 }
 .home_button{
     width: 50px;
@@ -28,160 +21,37 @@
     align-items: center;
     display: flex;
     flex-direction: column;
-    gap:7px;
+    gap: 7px;
     justify-content: center;
     cursor: pointer;
+    text-decoration: none;
 }
 .home_button:hover *{
     color: white;
 }
 
 /*****************************
-
         left container
-
 *****************************/
 
-.home_left_container{
-    height: 100%;
-    width: 100%;
-}
-.home_logo, .home_settings{
+.home_logo, .home_logout{
     height: 10%;
 }
 .home_buttons_left{
     height: 80%;
     padding-top: 70px;
-    gap: 35px;
 }
 .home_icon{
     color: rgb(156, 168, 184);
     font-size: 3vh;
 }
 
-
-
 /*****************************
-
        middle container
-
 *****************************/
-
 
 .home_middle_container{
     background-color: rgb(35, 35, 40);
-    min-height: 95vh;
-    margin-top: 5vh;
+    height: 100%;
     border-radius: 3vh;
-
 }
-
-/* left side, searchbar*/
-.home_searchbar{
-    border-radius: 25px;
-    height: 45px;
-    background-color: #2f333e;
-    display: flex;
-    align-items: center;
-    margin-bottom: 20px;
-    width: 90%;
-}
-.home_searchbar_container{
-    height: 75px;
-    display: flex;
-    align-items: center;
-}
-.home_searchbar input{
-    background-color: transparent;
-    outline: none;
-    border: none;
-    width: 85%;
-    margin: 0px 10px 0px 0px;
-    color: rgb(156, 168, 184);
-}
-.home_searchbar button{
-    width: 10%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background-color: transparent;
-    outline: none;
-    border: none;
-    color: rgb(156, 168, 184);
-}
-.home_searchbar button svg{
-    font-size: 20px;
-    margin-left: 10px;
-}
-.home_middle_left_container{
-    height: 100%;
-}
-.home_middle_left_container .home_friend_list{
-    height: 775px;
-    overflow-y: auto;
-    scrollbar-width: none;
-}
-.home_middle_right_container{
-    display: grid;
-    grid-template-rows: 10% minmax(83%,83%) 10%;
-}
-.home_chat_name{
-    font-size: 30px;
-    font-weight: 600;
-}
-.home_info_header{
-    align-items: center;
-    /* height: 75px !important; */
-}
-.home_conversation_input{
-    height: 60px;
-}
-.home_input input{
-    background-color: transparent;
-    border: none;
-    outline: none;
-    width: 100%;
-}
-.home_input button{
-    border: none;
-    background-color: transparent;
-    outline: none;
-}
-.home_input{
-    background-color: #2f333e;
-    border-radius: 10px;
-    height: 100%;
-    display: grid;
-    grid-template-columns: 10% 80% 10%;
-    align-items: center;
-    justify-items: center;
-}
-.home_conversation{
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    padding: 10px;
-    overflow-y: auto !important;
-    scrollbar-width: none; 
-    /* min-height: 700px; */
-    height: 700px;
-}
-/*****************************
-
-        right container
-
-*****************************/
-
-
-
-
-
-
-
-
-
-
-
-
-
-

@@ -1,5 +1,5 @@
 import "./Friend_list_component.css"
-export const Friends_list_component=()=>{
+export const Friends_list_component = () => {
     return (              
     <div className="home_friend d-flex align-items-center">
         <img src="https://bi.im-g.pl/im/62/6d/17/z24567394AMP,Kat---Roman-Kostrzewski--od-lewej--Krzysztof--Pist.jpg" className="w-25"/>
