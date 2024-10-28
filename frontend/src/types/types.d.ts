@@ -22,3 +22,8 @@ export interface UserData {
 export interface ApiMessage {
   message: string;
 }
+
+export interface ConversationFormData {
+  name: string;
+  file?: File;
+}

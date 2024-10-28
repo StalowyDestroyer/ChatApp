@@ -1,4 +1,5 @@
 import "./Conversation_message_component.css"
+
 export const Conversation_message_component = () => {
     return (
         <div className="home_chat_message_container home_chat_friend">
