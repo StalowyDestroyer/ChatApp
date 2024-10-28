@@ -1,0 +1,14 @@
+### Tworzenie konwersacji
+POST http://localhost:3000/api/v1/conversation
+Content-Type: application/json
+
+{
+    "name":"ExampleName"
+}
+
+###
+GET http://localhost:3000/api/v1/conversation/userConversations
+Content-Type: application/json
+###
+GET http://localhost:3000/api/v1/conversation/getConversationWithMessages
+Content-Type: application/json

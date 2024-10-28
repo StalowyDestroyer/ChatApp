@@ -3,7 +3,7 @@ POST http://localhost:3000/api/v1/auth/register
 Content-Type: application/json
 
 {
-    "authname": "exampleauth",
+    "username": "exampleauth",
     "password": "password123",
     "email": "example@example.com",
     "name":"name",

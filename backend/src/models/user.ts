@@ -4,13 +4,20 @@ import {
   Table,
   Model,
   BeforeCreate,
+  HasMany,
 } from "sequelize-typescript";
 import bcrypt from "bcryptjs";
+import { ConversationMessage } from "./conversationMessage";
 @Table({
   tableName: "user",
   timestamps: true,
+  defaultScope: {
+    attributes: {
+      exclude: ["password", "refreshToken"],
+    },
+  },
 })
-export class User extends Model<User> {
+export class User extends Model {
   @Column({
     allowNull: false,
     type: DataType.STRING,
@@ -47,4 +54,10 @@ export class User extends Model<User> {
     type: DataType.STRING,
   })
   refreshToken!: string | null;
+
+  @HasMany(() => ConversationMessage)
+  conversationMessages!: ConversationMessage[];
+
+  @HasMany(() => ConversationMessage)
+  conversationMembers!: ConversationMessage[];
 }

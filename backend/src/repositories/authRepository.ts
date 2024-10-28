@@ -76,6 +76,8 @@ export const registerUser = async (req: Request, res: Response) => {
     const { password, ...userWithoutPassword } = createdUser.dataValues;
     res.status(201).json(userWithoutPassword);
   } catch (error) {
+    console.log(error);
+
     res.status(500).json({ message: "Wewnętrzny błąd serwera" });
   }
 };

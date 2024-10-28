@@ -1,9 +1,9 @@
 import { Router } from "express";
-import { getUserById } from "../repositories/userRepository";
-import { verifyTokenForAccess } from "../utils/jwt";
+import { getUserById, userFilter } from "../repositories/userRepository";
 
 const router = Router();
 
-router.get("/:id", verifyTokenForAccess, getUserById);
+router.get("/:id", getUserById);
+router.get("/", userFilter);
 
 export default router;
