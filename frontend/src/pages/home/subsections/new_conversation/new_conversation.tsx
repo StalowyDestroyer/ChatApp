@@ -29,7 +29,7 @@ export const New_conversation = () => {
 
   return (
     <>
-      <div className="d-flex flex-column align-items-center w-100 overflow-auto new_conversation_contener">
+      <div className="d-flex flex-column align-items-center w-100 h-100 pb-5 overflow-auto new_conversation_contener justify-content-center">
         <form className="w-25 d-flex flex-column gap-3" onSubmit={submit}>
           <h2 className="new_conversation_title">Tworzenie nowej konwersacji</h2>
           <div className="position-relative">

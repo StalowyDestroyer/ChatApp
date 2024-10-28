@@ -27,7 +27,7 @@ export const Home = () => {
             <div className="home_buttons_left d-flex gap-5 align-items-center flex-column">
               <div className="d-flex flex-column home_label_FS">
                 {/* chat button */}
-                <Link to="./conversations" className="home_button">
+                <Link to="." className="home_button">
                   <FontAwesomeIcon
                     icon={faComments}
                     className="fs-white home_icon"
