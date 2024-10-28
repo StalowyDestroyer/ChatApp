@@ -6,12 +6,27 @@ import {
   faGear,
   faPowerOff,
 } from "@fortawesome/free-solid-svg-icons";
-import { Routes, Route, Link } from "react-router-dom";
+import { Routes, Route, Link, useNavigate } from "react-router-dom";
 import { Conversations } from "./subsections/conversations/conversations";
 import { New_conversation } from "./subsections/new_conversation/new_conversation";
 import { Profile_settings } from "./subsections/profile_settings/profile_settings";
+import { useMutation } from "react-query";
+import { logoutUser } from "../../services/authService";
+import { AxiosError } from "axios";
+import { ApiMessage } from "../../types/types";
 
 export const Home = () => {
+  const navigate = useNavigate();
+
+  const { mutateAsync: logoutAsync } = useMutation(
+    async () => await logoutUser(),
+    {
+      onSuccess: () => navigate("/login"),
+      onError: (error: AxiosError<ApiMessage>) =>
+        console.log(error.response?.data.message),
+    }
+  );
+
   return (
     <div className="home_main_container text-center d-flex flex-column py-3 pe-3">
       <div className="row m-0 h-100">
@@ -58,7 +73,10 @@ export const Home = () => {
             </div>
             <div className="home_logout d-flex flex-column align-items-center justify-content-center home_label_FS">
               {/* logout button */}
-              <button className="home_button">
+              <button
+                className="home_button"
+                onClick={async () => await logoutAsync()}
+              >
                 <FontAwesomeIcon
                   icon={faPowerOff}
                   className="fs-white home_icon"

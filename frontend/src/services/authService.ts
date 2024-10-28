@@ -10,3 +10,7 @@ export const loginUser = async (data: LoginFormData) => {
   const result = await apiClient.post("auth/login", data);
   return result.data;
 };
+
+export const logoutUser = async () => {
+  await apiClient.post("auth/logout");
+};

@@ -24,7 +24,7 @@ app.use(
 //Route paths
 app.use("/api/v1/user", userRoutes);
 app.use("/api/v1/auth", authRoutes);
-app.use("/api/v1/conversation", conversationRoutes);
+app.use("/api/v1/conversation", verifyToken, conversationRoutes);
 
 //Models sync
 sequelize
