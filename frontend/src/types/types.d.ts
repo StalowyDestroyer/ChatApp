@@ -27,3 +27,11 @@ export interface ConversationFormData {
   name: string;
   file?: File;
 }
+
+export interface Conversation {
+  id: string;
+  name: string;
+  imagePath?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}

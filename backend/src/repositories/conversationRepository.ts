@@ -12,7 +12,7 @@ export const createConversation = async (req: Request, res: Response) => {
       userID: req.user?.id,
       conversationID: conversation.id,
     });
-    res.status(201).json();
+    res.status(201).json(conversation);
   } catch (error) {
     console.error("Error fetching conversation with messages:", error);
     res.status(500).json({ error: "Internal Server Error" });
@@ -52,12 +52,16 @@ export const getConversationWithMessages = async (
 
 export const getUserConversations = async (req: Request, res: Response) => {
   try {
-    const result = await ConversationMembers.findAll({
-      where: {
-        userID: req.user?.id,
-      },
+    const userConversations = await Conversation.findAll({
+      include: [
+        {
+          model: User,
+          where: { id: req.user?.id },
+          attributes: [],
+        },
+      ],
     });
-    res.status(200).json(result);
+    res.status(200).json(userConversations);
   } catch (error) {
     console.error("Error fetching conversation with messages:", error);
     res.status(500).json({ error: "Internal Server Error" });
