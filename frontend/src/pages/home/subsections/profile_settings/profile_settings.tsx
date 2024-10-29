@@ -28,7 +28,7 @@ export const Profile_settings = () => {
   }
 
   const { mutateAsync: updateAsync } = useMutation(
-    () => updateUserData(1, userData),//fix user id here
+    () => updateUserData(userData),
     {
       onSuccess: (res) => {
         //refech danych i zdjęcia
@@ -84,7 +84,7 @@ export const Profile_settings = () => {
               />
           </div>
           <button type="submit" className="btn btn-primary">
-            Utwórz
+            Zaktualizuj dane
           </button>
         </form>
       </div>

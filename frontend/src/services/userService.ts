@@ -6,7 +6,7 @@ export const getUserById = async (id: number) => {
   return result.data;
 };
 
-export const updateUserData = async (id: number, data: UserUpdateFormData) => {
-  const result = await apiClient.put(`user/${id}`, data);
+export const updateUserData = async (data: UserUpdateFormData) => {
+  const result = await apiClient.put(`user`, data);
   return result.data;
 }
