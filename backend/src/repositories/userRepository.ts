@@ -31,3 +31,12 @@ export const userFilter = async (req: Request, res: Response) => {
     res.status(500).json({ message: "Internal server error" });
   }
 };
+
+export const updateUser = async (req: Request, res: Response) => {
+  try {
+    
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};

@@ -45,8 +45,8 @@ export const New_conversation = () => {
 
   return (
     <>
-      <div className="d-flex flex-column align-items-center w-100 h-100 pb-5 overflow-auto new_conversation_contener justify-content-center">
-        <form className="w-25 d-flex flex-column gap-3" onSubmit={submit}>
+      <div className="d-flex flex-column align-items-center w-100 overflow-auto new_conversation_contener">
+        <form className="col-9 col-sm-7 col-md-5 col-xl-4 col-xxl-3 d-flex flex-column gap-3" onSubmit={submit}>
           <h2 className="new_conversation_title">
             Tworzenie nowej konwersacji
           </h2>
@@ -55,23 +55,23 @@ export const New_conversation = () => {
               <img
                 src={image ?? keks}
                 className="w-100 bg-white rounded-circle overflow-hidden border border-2 border-black"
-              />
+                />
             </div>
             <label
               className="position-absolute d-flex image_add"
               htmlFor="conversation_icon"
-            >
+              >
               <input
                 type="file"
                 accept="image/*"
                 id="conversation_icon"
                 className="d-none"
                 onChange={file_change}
-              />
+                />
               <FontAwesomeIcon
                 icon={faCirclePlus}
                 className="rounded-circle border border-2 bg-black border-black"
-              />
+                />
             </label>
           </div>
           <div>
@@ -86,7 +86,7 @@ export const New_conversation = () => {
               onChange={(e) => {
                 setConversationData({ name: e.target.value });
               }}
-            />
+              />
           </div>
           <button type="submit" className="btn btn-primary">
             Utwórz

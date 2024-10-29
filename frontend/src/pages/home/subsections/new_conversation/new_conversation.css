@@ -1,5 +1,6 @@
 .new_conversation_contener {
     scrollbar-width: none;
+    min-height: 100%;
 }
 
 .image_add {

@@ -5,6 +5,11 @@ export interface UserFormData {
   passwordCheck: string;
 }
 
+export interface UserUpdateFormData {
+  username: string;
+  file?: File;
+}
+
 export interface LoginFormData {
   email: string;
   password: string;
