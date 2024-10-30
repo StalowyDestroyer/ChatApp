@@ -8,7 +8,7 @@ export const createConversation = async (req: Request, res: Response) => {
     const conversation = await Conversation.create({
       name: req.body.conversation,
       imagePath: req.file
-        ? "http://localhost:3000/uploads/chat-images/" + req.file.filename
+        ? "http://localhost:3000/uploads/chat-avatar/" + req.file.filename
         : null,
     });
     await ConversationMembers.create({
