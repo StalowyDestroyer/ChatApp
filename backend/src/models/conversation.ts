@@ -46,4 +46,7 @@ export class Conversation extends Model {
 
   @BelongsToMany(() => User, () => ConversationMembers)
   users!: User[];
+
+  @HasMany(() => ConversationMembers)
+  conversationMembers!: ConversationMembers[];
 }

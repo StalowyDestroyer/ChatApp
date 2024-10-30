@@ -1,5 +1,5 @@
 import * as yup from "yup";
-import { UserFormData } from "../types/types";
+import { UserFormData, UserUpdateFormData } from "../types/types";
 
 const registerSchema = yup.object().shape({
   username: yup
@@ -28,9 +28,27 @@ const registerSchema = yup.object().shape({
     }),
 });
 
+const updateSchema = yup.object().shape({
+  username: yup
+    .string()
+    .required("Nazwa użytkownika jest wymagana")
+    .min(5, "Nazwa uzytkownika musi mieć minimum 5 znaków")
+    .max(30, "Nazwa użytkownika musi mieć poniżej 30 znaków"),
+});
+
 export const validateUserForRegister = async (data: UserFormData) => {
   try {
     await registerSchema.validate(data, { abortEarly: true });
+    return true;
+  } catch (error) {
+    if (error instanceof yup.ValidationError) console.log(error.errors);
+    return false;
+  }
+};
+
+export const validateUserUpdate = async (data: UserUpdateFormData) => {
+  try {
+    await updateSchema.validate(data, { abortEarly: true });
     return true;
   } catch (error) {
     if (error instanceof yup.ValidationError) console.log(error.errors);
