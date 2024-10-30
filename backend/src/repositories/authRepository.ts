@@ -5,6 +5,7 @@ import {
   generateRefreshToken,
   verifyRefreshToken,
 } from "../utils/jwt";
+import { RefreshToken } from "../models/refreshToken";
 
 const cookieParams: CookieOptions = {
   httpOnly: true,
@@ -24,8 +25,10 @@ export const login = async (req: Request, res: Response) => {
     const accessToken = generateAccessToken(user);
     const refreshToken = generateRefreshToken(user);
 
-    user.refreshToken = refreshToken;
-    await user.save();
+    await RefreshToken.create({
+      userID: user.id,
+      refreshToken: refreshToken,
+    });
 
     res.cookie("accessToken", accessToken, cookieParams);
     res.cookie("refreshToken", refreshToken, cookieParams);
@@ -44,19 +47,16 @@ export const logout = async (req: Request, res: Response) => {
   try {
     const { refreshToken } = req.cookies;
 
-    if (!refreshToken) {
-      res.status(400).json({ message: "Nie znaleziono tokenu odświeżania" });
-      return;
-    }
+    if (refreshToken) {
+      await RefreshToken.destroy({
+        where: {
+          refreshToken: req.cookies["refreshToken"],
+        },
+      });
 
-    const user = await User.findOne({ where: { refreshToken } });
-    if (user) {
-      user.refreshToken = null;
-      await user.save();
+      res.clearCookie("accessToken");
+      res.clearCookie("refreshToken");
     }
-
-    res.clearCookie("accessToken");
-    res.clearCookie("refreshToken");
     res.status(200).json({ message: "Pomyślnie wylogowano" });
   } catch (error) {
     res.status(500).json({ message: "Wewnętrzny błąd serwera" });
@@ -106,9 +106,17 @@ export const refreshToken = async (req: Request, res: Response) => {
       return;
     }
 
-    const user = await User.findOne({ where: { refreshToken } });
-    if (!user) {
+    const refreshTokenEntry = await RefreshToken.findOne({
+      where: { refreshToken },
+    });
+    if (!refreshTokenEntry) {
       res.status(403).json({ message: "Niepoprawny token odświeżania" });
+      return;
+    }
+
+    const user = await User.findByPk(refreshTokenEntry.userID);
+    if (!user) {
+      res.status(403).json({ message: "Użytkownik nie znaleziony" });
       return;
     }
 

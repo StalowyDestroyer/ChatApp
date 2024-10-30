@@ -4,6 +4,7 @@ import { Message } from "./models/message";
 import { Conversation } from "./models/conversation";
 import { ConversationMessage } from "./models/conversationMessage";
 import { ConversationMembers } from "./models/conversationMembers";
+import { RefreshToken } from "./models/refreshToken";
 
 const sequelize = new Sequelize({
   dialect: "mysql",
@@ -18,6 +19,7 @@ const sequelize = new Sequelize({
     Conversation,
     ConversationMessage,
     ConversationMembers,
+    RefreshToken,
   ],
 });
 
