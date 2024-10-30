@@ -7,6 +7,7 @@ import { ConversationFormData } from "../../../../types/types";
 import { useMutation } from "react-query";
 import { createConversation } from "../../../../services/conversationService";
 import { useNavigate } from "react-router-dom";
+import { validateConversation } from "../../../../validators/conversationValidation";
 
 export const New_conversation = () => {
   const [image, setImage] = useState<string | null>(null);
@@ -15,13 +16,16 @@ export const New_conversation = () => {
   const navigate = useNavigate();
   async function submit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-
-    await createAsync();
+    if (await validateConversation(conversationData)) await createAsync();
   }
 
   function file_change(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
-    if (file) {
+    if (file && file.type.includes("image")) {
+      setConversationData((prev) => ({
+        ...prev,
+        file: file,
+      }));
       const reader = new FileReader();
       reader.onloadend = () => {
         setImage(reader.result as string);
@@ -33,10 +37,9 @@ export const New_conversation = () => {
   const { mutateAsync: createAsync } = useMutation(
     () => createConversation(conversationData),
     {
-      onSuccess: (res) => {
+      onSuccess: () => {
         setConversationData({ name: "", file: undefined });
         setImage(null);
-        console.log(res);
         navigate("/home");
       },
       onError: (error) => console.log(error),
@@ -46,7 +49,12 @@ export const New_conversation = () => {
   return (
     <>
       <div className="d-flex flex-column align-items-center w-100 h-100 pb-5 overflow-auto new_conversation_contener justify-content-center">
-        <form className="w-25 d-flex flex-column gap-3" onSubmit={submit}>
+        <form
+          className="w-25 d-flex flex-column gap-3"
+          onSubmit={submit}
+          method="POST"
+          encType="multipart/form-data"
+        >
           <h2 className="new_conversation_title">
             Tworzenie nowej konwersacji
           </h2>
@@ -66,6 +74,7 @@ export const New_conversation = () => {
                 accept="image/*"
                 id="conversation_icon"
                 className="d-none"
+                name="file"
                 onChange={file_change}
               />
               <FontAwesomeIcon
@@ -84,7 +93,10 @@ export const New_conversation = () => {
               placeholder="Nazwa"
               value={conversationData.name}
               onChange={(e) => {
-                setConversationData({ name: e.target.value });
+                setConversationData({
+                  ...conversationData,
+                  name: e.target.value,
+                });
               }}
             />
           </div>

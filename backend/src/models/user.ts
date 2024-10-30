@@ -8,9 +8,18 @@ import {
 } from "sequelize-typescript";
 import bcrypt from "bcryptjs";
 import { ConversationMessage } from "./conversationMessage";
+import { ConversationMembers } from "./conversationMembers";
+import { Message } from "./message";
 @Table({
   tableName: "user",
   timestamps: true,
+  scopes: {
+    safeData: {
+      attributes: {
+        exclude: ["refreshToken", "password"],
+      },
+    },
+  },
 })
 export class User extends Model {
   @Column({
@@ -53,6 +62,6 @@ export class User extends Model {
   @HasMany(() => ConversationMessage)
   conversationMessages!: ConversationMessage[];
 
-  @HasMany(() => ConversationMessage)
-  conversationMembers!: ConversationMessage[];
+  @HasMany(() => ConversationMembers)
+  conversationMembers!: ConversationMembers[];
 }
