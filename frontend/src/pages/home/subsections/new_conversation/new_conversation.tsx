@@ -18,10 +18,17 @@ export const New_conversation = () => {
     e.preventDefault();
     if (await validateConversation(conversationData)) await createAsync();
   }
+  const allowedImageTypes = [
+    "image/jpeg",
+    "image/png",
+    "image/gif",
+    "image/webp",
+  ];
 
   function file_change(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
-    if (file && file.type.includes("image")) {
+
+    if (file && allowedImageTypes.some((z) => z == file?.type)) {
       setConversationData((prev) => ({
         ...prev,
         file: file,
