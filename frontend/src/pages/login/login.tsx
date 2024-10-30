@@ -26,7 +26,7 @@ export const Login = () => {
   const { mutateAsync: loginAsync } = useMutation(
     async () => await loginUser(loginData),
     {
-      onSuccess: () => navigate("/"),
+      onSuccess: () => navigate("/home"),
       onError: (res: AxiosError<ApiMessage>) =>
         console.log(res.response?.data.message),
     }

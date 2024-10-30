@@ -29,7 +29,12 @@ export const login = async (req: Request, res: Response) => {
 
     res.cookie("accessToken", accessToken, cookieParams);
     res.cookie("refreshToken", refreshToken, cookieParams);
-    res.status(200).json({ message: "Logged in" });
+    const {
+      password: _,
+      refreshToken: __,
+      ...userWithoutSensitiveInfo
+    } = user.get({ plain: true });
+    res.status(200).json(userWithoutSensitiveInfo);
   } catch (error) {
     res.status(500).json({ message: error });
   }

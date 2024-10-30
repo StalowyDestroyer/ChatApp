@@ -6,6 +6,7 @@ import conversationRoutes from "./routes/conversationRoutes";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import { verifyToken } from "./middlewares/jwtMiddleware";
+
 const app: Application = express();
 const port = 3000;
 app.use(express.json());
@@ -22,9 +23,11 @@ app.use(
 // app.use(verifyToken);
 
 //Route paths
-app.use("/api/v1/user", userRoutes);
+app.use("/api/v1/user", verifyToken, userRoutes);
 app.use("/api/v1/auth", authRoutes);
-app.use("/api/v1/conversation", conversationRoutes);
+app.use("/api/v1/conversation", verifyToken, conversationRoutes);
+
+app.use("/uploads", express.static("uploads"));
 
 //Models sync
 sequelize

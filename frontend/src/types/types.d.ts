@@ -5,6 +5,11 @@ export interface UserFormData {
   passwordCheck: string;
 }
 
+export interface UserUpdateFormData {
+  username: string;
+  file?: File;
+}
+
 export interface LoginFormData {
   email: string;
   password: string;
@@ -21,4 +26,17 @@ export interface UserData {
 
 export interface ApiMessage {
   message: string;
+}
+
+export interface ConversationFormData {
+  name: string;
+  file?: File;
+}
+
+export interface Conversation {
+  id: string;
+  name: string;
+  imagePath?: string | null;
+  createdAt: string;
+  updatedAt: string;
 }
