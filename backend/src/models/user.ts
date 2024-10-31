@@ -9,7 +9,8 @@ import {
 import bcrypt from "bcryptjs";
 import { ConversationMessage } from "./conversationMessage";
 import { ConversationMembers } from "./conversationMembers";
-import { Message } from "./message";
+
+import { RefreshToken } from "./refreshToken";
 @Table({
   tableName: "user",
   timestamps: true,
@@ -53,15 +54,12 @@ export class User extends Model {
   })
   profilePicturePath!: string | null;
 
-  @Column({
-    allowNull: true,
-    type: DataType.STRING,
-  })
-  refreshToken!: string | null;
-
   @HasMany(() => ConversationMessage)
   conversationMessages!: ConversationMessage[];
 
   @HasMany(() => ConversationMembers)
   conversationMembers!: ConversationMembers[];
+
+  @HasMany(() => RefreshToken)
+  refreshTokens!: RefreshToken[];
 }

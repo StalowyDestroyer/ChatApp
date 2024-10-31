@@ -4,6 +4,7 @@ import { Message } from "./models/message";
 import { Conversation } from "./models/conversation";
 import { ConversationMessage } from "./models/conversationMessage";
 import { ConversationMembers } from "./models/conversationMembers";
+import { RefreshToken } from "./models/refreshToken";
 
 const sequelize = new Sequelize({
   dialect: "mysql",
@@ -12,12 +13,14 @@ const sequelize = new Sequelize({
   password: "",
   database: "chatapp",
   logging: console.log,
+  timezone: "+01:00",
   models: [
     User,
     Message,
     Conversation,
     ConversationMessage,
     ConversationMembers,
+    RefreshToken,
   ],
 });
 

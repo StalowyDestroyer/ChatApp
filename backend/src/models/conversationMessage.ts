@@ -12,7 +12,7 @@ import { User } from "./user";
 
 @Table({
   tableName: "conversationMessages",
-  timestamps: true,
+  timestamps: false,
   defaultScope: {
     attributes: {
       exclude: ["conversationID", "createdAt", "updatedAt"],
