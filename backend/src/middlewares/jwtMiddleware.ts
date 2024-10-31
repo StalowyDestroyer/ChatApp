@@ -31,11 +31,14 @@ export const verifyToken = (
 
     next();
   } catch (err) {
-    if (err instanceof jwt.JsonWebTokenError) {
-      res.status(403).json({ message: "Invalid or expired token" });
+    if (err instanceof jwt.TokenExpiredError) {
+      res.status(403).json({ message: "Token expired" });
       return;
     }
-
+    if (err instanceof jwt.JsonWebTokenError) {
+      res.status(403).json({ message: "Invalid token" });
+      return;
+    }
     res.status(500).json({ message: "Server error during token verification" });
     return;
   }

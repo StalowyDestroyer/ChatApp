@@ -12,6 +12,15 @@ const cookieParams: CookieOptions = {
   sameSite: "strict",
 };
 
+const accessTokenOptions: CookieOptions = {
+  ...cookieParams,
+};
+
+const refreshTokenOptions: CookieOptions = {
+  ...cookieParams,
+  maxAge: 86_400_000, // 1d
+};
+
 export const login = async (req: Request, res: Response) => {
   try {
     const { email, password } = req.body;
@@ -30,8 +39,8 @@ export const login = async (req: Request, res: Response) => {
       refreshToken: refreshToken,
     });
 
-    res.cookie("accessToken", accessToken, cookieParams);
-    res.cookie("refreshToken", refreshToken, cookieParams);
+    res.cookie("accessToken", accessToken, accessTokenOptions);
+    res.cookie("refreshToken", refreshToken, refreshTokenOptions);
     const {
       password: _,
       refreshToken: __,
@@ -114,16 +123,17 @@ export const refreshToken = async (req: Request, res: Response) => {
       return;
     }
 
+    await verifyRefreshToken(refreshToken);
+
     const user = await User.findByPk(refreshTokenEntry.userID);
     if (!user) {
       res.status(403).json({ message: "Użytkownik nie znaleziony" });
       return;
     }
 
-    await verifyRefreshToken(refreshToken);
     const newAccessToken = generateAccessToken(user);
 
-    res.cookie("accessToken", newAccessToken, cookieParams);
+    res.cookie("accessToken", newAccessToken, accessTokenOptions);
     res
       .status(200)
       .json({ message: "Token odświeżania został pomyślnie przeładowany" });
