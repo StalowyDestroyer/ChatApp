@@ -44,7 +44,8 @@ export const Register = () => {
           className="login_image position-absolute start-50 translate-middle rounded-circle bg-secondary p-4"
         />
         <h1 className="text-center mt-5 mb-1">Rejestracja</h1>
-        <div className="d-flex flex-column gap-3">
+        <form className="d-flex flex-column gap-3" 
+            onSubmit={() => submitRegisterForm()}>
           <div>
             <label className="fs-5 p-1">Nazwa użytkownika</label>
             <div className="input-group">
@@ -107,13 +108,13 @@ export const Register = () => {
           </div>
           <div className="d-flex flex-column pt-3">
             <button
+              type="submit"
               className="btn btn-primary fs-4 rounded-4"
-              onClick={() => submitRegisterForm()}
             >
               Zarejestruj się
             </button>
           </div>
-        </div>
+        </form>
       </div>
     </div>
   );

@@ -1,7 +1,7 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import "./login.css";
 import { faEnvelope, faLock, faUser } from "@fortawesome/free-solid-svg-icons";
-import { useState } from "react";
+import { FormEvent, useState } from "react";
 import { ApiMessage, LoginFormData } from "../../types/types";
 import { useMutation } from "react-query";
 import { AxiosError } from "axios";
@@ -37,7 +37,8 @@ export const Login = () => {
     }
   );
 
-  async function loginButtonClick() {
+  async function submit(e: FormEvent) {
+    e.preventDefault();
     await loginAsync();
   }
 
@@ -49,7 +50,7 @@ export const Login = () => {
           className="login_image position-absolute start-50 translate-middle rounded-circle bg-secondary p-4"
         />
         <h1 className="text-center mt-5 mb-1">Login</h1>
-        <div className="d-flex flex-column gap-3">
+        <form className="d-flex flex-column gap-3" onSubmit={(e) => submit(e)}>
           <div>
             <label className="fs-5 p-1">Email</label>
             <div className="input-group">
@@ -82,13 +83,13 @@ export const Login = () => {
           </div>
           <div className="d-flex flex-column pt-3">
             <button
+            type="submit"
               className="btn btn-primary fs-4 rounded-4"
-              onClick={() => loginButtonClick()}
             >
               Zaloguj się
             </button>
           </div>
-        </div>
+        </form>
       </div>
     </div>
   );
