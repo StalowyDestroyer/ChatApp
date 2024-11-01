@@ -6,7 +6,7 @@ dotenv.config();
 
 export const generateAccessToken = (user: User) => {
   return jwt.sign({ id: user.id }, process.env.JWT_SECRET!, {
-    expiresIn: "1m",
+    expiresIn: "15m",
   });
 };
 
