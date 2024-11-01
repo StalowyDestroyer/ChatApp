@@ -21,3 +21,10 @@ export const getAllUserConversations = async () => {
   );
   return result.data;
 };
+
+export const getConversationById = async (id: string) => {
+  const result = await apiClient.get<Conversation>(
+    `conversation/${id}`,
+  );
+  return result.data;
+}

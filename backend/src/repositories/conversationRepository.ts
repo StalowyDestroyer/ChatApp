@@ -39,3 +39,13 @@ export const getUserConversations = async (req: Request, res: Response) => {
     res.status(500).json({ error: "Internal Server Error" });
   }
 };
+
+export const getConversationById = async (req: Request, res: Response) => {
+  try {
+    const conversation = await Conversation.findByPk(req.params.id);
+    res.status(200).json(conversation);
+  } catch (error) {
+    console.error("Error fetching conversation with messages:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};

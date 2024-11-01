@@ -1,9 +1,9 @@
-import { useQuery, UseQueryOptions, UseQueryResult } from "react-query";
+import { QueryKey, useQuery, UseQueryOptions, UseQueryResult } from "react-query";
 import { useAuthContext } from "../authContext/useAuth";
 import { useEffect, useState } from "react";
 
 export const useAuthenticatedQuery = <TData = unknown, TError = unknown>(
-  key: string,
+  key: QueryKey,
   queryFn: () => Promise<TData>,
   options?: UseQueryOptions<TData, TError>
 ): UseQueryResult<TData, TError> => {
@@ -13,7 +13,7 @@ export const useAuthenticatedQuery = <TData = unknown, TError = unknown>(
 
   const query = useQuery<TData, TError>(key, queryFn, {
     ...options,
-    enabled: false,
+    enabled: Boolean(isAuth) && !isAuthLoading,
   });
 
   useEffect(() => {

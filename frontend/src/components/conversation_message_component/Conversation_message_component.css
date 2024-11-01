@@ -25,13 +25,15 @@
     margin: 0px;
     background-color: white;
     display: flex;
-    width: 70%;
+    max-width: 70%;
     justify-content: baseline;
-    padding: 10px;
+    padding: 10px 30px;
     border-radius: 10px;
     background-color: #2f333e;
-    word-break:keep-all;
+    word-break: keep-all;
     text-align: left;
+    display: flex;
+    align-items: center;
 }
 .home_chat_user div{
     justify-content: right !important;
