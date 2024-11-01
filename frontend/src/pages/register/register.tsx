@@ -1,6 +1,6 @@
 import { faEnvelope, faLock, faUser } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { useState } from "react";
+import { FormEvent, useState } from "react";
 import { ApiMessage, UserFormData } from "../../types/types";
 import { useMutation } from "react-query";
 import { validateUserForRegister } from "../../validators/userValidation";
@@ -23,7 +23,8 @@ export const Register = () => {
     }));
   }
 
-  async function submitRegisterForm() {
+  async function submitRegisterForm(e: FormEvent) {
+    e.preventDefault();
     if (await validateUserForRegister(registerData)) await registerUserAsync();
   }
 
@@ -45,7 +46,7 @@ export const Register = () => {
         />
         <h1 className="text-center mt-5 mb-1">Rejestracja</h1>
         <form className="d-flex flex-column gap-3" 
-            onSubmit={() => submitRegisterForm()}>
+            onSubmit={(e) => submitRegisterForm(e)}>
           <div>
             <label className="fs-5 p-1">Nazwa użytkownika</label>
             <div className="input-group">

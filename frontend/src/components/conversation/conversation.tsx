@@ -2,12 +2,31 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import "./conversation.css"
 import { faEllipsisVertical, faMagnifyingGlass, faPaperclip } from "@fortawesome/free-solid-svg-icons"
 import { Conversation_message_component } from "../conversation_message_component/Conversation_message_component"
+import { useState } from "react"
+import { useAuthenticatedQuery } from "../../utils/useAuthQuery/useQueryHook"
+import { getConversationById } from "../../services/conversationService"
 
 interface props {
   id: string,
 }
 
 export const Conversation: React.FC<props> = ({id}) => {
+  const [searchString, setSearchString] = useState<string>("");
+  const [messageSearchActive, setMessageSearchActive] = useState<boolean>(false);
+  
+  const {data: conversationInfo } = useAuthenticatedQuery(
+    ['conversation', id],
+    async () => await getConversationById(id), {
+      onSuccess: (res) => {
+        console.log(res);
+        
+      },
+      onError: (res) => {
+        console.log(res);
+        
+      }
+    }
+  )
 
   return (
       <div className="col-8 home_middle_right_container">
@@ -15,7 +34,7 @@ export const Conversation: React.FC<props> = ({id}) => {
       <div className="home_info_header d-flex justify-content-between mx-5">
         {/* Info container */}
         <div className="align-items-start d-flex flex-column">
-          <label className="home_label home_chat_name m-0 p-0">{id}</label>
+          <label className="home_label home_chat_name m-0 p-0">{conversationInfo?.name}</label>
         </div>
         {/* Button container */}
         <div className="d-flex align-items-center justify-content-end gap-5">
@@ -25,9 +44,12 @@ export const Conversation: React.FC<props> = ({id}) => {
               <FontAwesomeIcon
                 icon={faMagnifyingGlass}
                 className="fs-white home_icon"
+                onClick={() => setMessageSearchActive(!messageSearchActive)}
                 />
             </button>
-            <input className="form-control message_search_input"/>
+            <input className={"form-control message_search_input " + (messageSearchActive ? "" : "message_search_input_hidden")}
+              value={searchString}
+              onChange={(e) => setSearchString(e.target.value)}/>
           </div>
           <div className="d-flex gap-2 home_label home_label_FS">
             {/* meetings button */}

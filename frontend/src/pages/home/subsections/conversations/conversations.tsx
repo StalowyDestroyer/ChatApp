@@ -15,8 +15,8 @@ export const Conversations = () => {
     "userConversations",
     async () => await getAllUserConversations(),
     {
-      onSuccess: () => {
-        if(!currentConversation && conversations!.length > 0) setCurrentConversation(conversations![0].id)
+      onSuccess: (res) => {
+        if(!currentConversation && res!.length > 0) setCurrentConversation(res![0].id)
       },
       onError: (res) => console.log(res),
     }
@@ -39,7 +39,7 @@ export const Conversations = () => {
         <div className="home_friend_list gap-2 d-flex flex-column">
           {conversations && conversations.length > 0 ? (
             conversations?.map((element) => (
-              <Friends_list_component data={element} key={element.id} />
+              <Friends_list_component data={element} key={element.id} setCurrentConversation={setCurrentConversation} />
             ))
           ) : (
             <p>Brak konversacji</p>

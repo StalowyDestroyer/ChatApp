@@ -43,3 +43,13 @@
     scrollbar-width: none; 
     height: 100%;
 }
+.message_search_input {
+    background-color: #2f333e;
+    transition: all ease-in-out .5s;
+    width: 150px;
+}
+.message_search_input_hidden {
+    width: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+}
