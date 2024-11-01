@@ -7,9 +7,11 @@ import { useMutation } from "react-query";
 import { AxiosError } from "axios";
 import { useNavigate } from "react-router-dom";
 import { loginUser } from "../../services/authService";
+import { useAuthContext } from "../../utils/authContext/useAuth";
 
 export const Login = () => {
   const navigate = useNavigate();
+  const { login } = useAuthContext();
   const [loginData, setLoginData] = useState<LoginFormData>({
     email: "",
     password: "",
@@ -26,7 +28,10 @@ export const Login = () => {
   const { mutateAsync: loginAsync } = useMutation(
     async () => await loginUser(loginData),
     {
-      onSuccess: () => navigate("/home"),
+      onSuccess: () => {
+        login();
+        navigate("/home");
+      },
       onError: (res: AxiosError<ApiMessage>) =>
         console.log(res.response?.data.message),
     }

@@ -7,15 +7,14 @@ import {
   faPaperclip,
 } from "@fortawesome/free-solid-svg-icons";
 import "./conversations.css";
-import { useQuery } from "react-query";
 import { getAllUserConversations } from "../../../../services/conversationService";
+import { useAuthenticatedQuery } from "../../../../utils/useAuthQuery/useQueryHook";
 
 export const Conversations = () => {
-  const { data: conversations } = useQuery(
+  const { data: conversations } = useAuthenticatedQuery(
     "userConversations",
     async () => await getAllUserConversations(),
     {
-      onSuccess: (res) => console.log(res),
       onError: (res) => console.log(res),
     }
   );
@@ -37,7 +36,7 @@ export const Conversations = () => {
         <div className="home_friend_list gap-2 d-flex flex-column">
           {conversations && conversations.length > 0 ? (
             conversations?.map((element) => (
-              <Friends_list_component data={element} />
+              <Friends_list_component data={element} key={element.id} />
             ))
           ) : (
             <p>Brak konversacji</p>

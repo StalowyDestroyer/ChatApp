@@ -134,9 +134,7 @@ export const refreshToken = async (req: Request, res: Response) => {
     const newAccessToken = generateAccessToken(user);
 
     res.cookie("accessToken", newAccessToken, accessTokenOptions);
-    res
-      .status(200)
-      .json({ message: "Token odświeżania został pomyślnie przeładowany" });
+    res.status(200).json(newAccessToken);
   } catch (error) {
     res.status(500).json({ message: "Wewnętrzny błąd serwera" });
   }

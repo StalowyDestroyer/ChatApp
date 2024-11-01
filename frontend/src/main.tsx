@@ -7,17 +7,20 @@ import { Register } from "./pages/register/register";
 import "bootstrap/dist/css/bootstrap.css";
 import { QueryClientProvider } from "react-query";
 import { queryClient } from "./configs/queryClient";
+import { AuthContextProvider } from "./utils/authContext/authContext";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
-      <BrowserRouter>
-        <Routes>
-          <Route path="home/*" element={<Home />} />
-          <Route path="login" element={<Login />} />
-          <Route path="register" element={<Register />} />
-        </Routes>
-      </BrowserRouter>
+      <AuthContextProvider>
+        <BrowserRouter>
+          <Routes>
+            <Route path="home/*" element={<Home />} />
+            <Route path="login" element={<Login />} />
+            <Route path="register" element={<Register />} />
+          </Routes>
+        </BrowserRouter>
+      </AuthContextProvider>
     </QueryClientProvider>
   </StrictMode>
 );
