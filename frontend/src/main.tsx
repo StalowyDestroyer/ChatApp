@@ -1,4 +1,3 @@
-import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Home } from "./pages/home/home";
@@ -8,10 +7,11 @@ import "bootstrap/dist/css/bootstrap.css";
 import { QueryClientProvider } from "react-query";
 import { queryClient } from "./configs/queryClient";
 import { AuthContextProvider } from "./utils/authContext/authContext";
+import { SocketProvider } from "./utils/socketContext/socketContext";
 
 createRoot(document.getElementById("root")!).render(
-  <StrictMode>
-    <QueryClientProvider client={queryClient}>
+  <QueryClientProvider client={queryClient}>
+    <SocketProvider>
       <AuthContextProvider>
         <BrowserRouter>
           <Routes>
@@ -21,6 +21,6 @@ createRoot(document.getElementById("root")!).render(
           </Routes>
         </BrowserRouter>
       </AuthContextProvider>
-    </QueryClientProvider>
-  </StrictMode>
+    </SocketProvider>
+  </QueryClientProvider>
 );

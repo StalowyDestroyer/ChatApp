@@ -1,4 +1,9 @@
-import { QueryKey, useQuery, UseQueryOptions, UseQueryResult } from "react-query";
+import {
+  QueryKey,
+  useQuery,
+  UseQueryOptions,
+  UseQueryResult,
+} from "react-query";
 import { useAuthContext } from "../authContext/useAuth";
 import { useEffect, useState } from "react";
 
@@ -13,7 +18,7 @@ export const useAuthenticatedQuery = <TData = unknown, TError = unknown>(
 
   const query = useQuery<TData, TError>(key, queryFn, {
     ...options,
-    enabled: Boolean(isAuth) && !isAuthLoading,
+    enabled: Boolean(isAuth) && !isAuthLoading && options?.enabled,
   });
 
   useEffect(() => {

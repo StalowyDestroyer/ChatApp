@@ -40,3 +40,20 @@ export interface Conversation {
   createdAt: string;
   updatedAt: string;
 }
+
+//Socket types
+export interface SocketMessagePayload {
+  roomID: string;
+  message: Message;
+  userID: number;
+}
+
+export interface Message {
+  id: number;
+  content: string;
+}
+
+export interface ReciveMessageData {
+  user: UserData;
+  message: Message;
+}

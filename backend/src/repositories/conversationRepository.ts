@@ -2,6 +2,8 @@ import { Request, Response } from "express";
 import { Conversation } from "../models/conversation";
 import { User } from "../models/user";
 import { ConversationMembers } from "../models/conversationMembers";
+import { Message } from "../models/message";
+import { ConversationMessage } from "../models/conversationMessage";
 
 export const createConversation = async (req: Request, res: Response) => {
   try {
@@ -48,4 +50,17 @@ export const getConversationById = async (req: Request, res: Response) => {
     console.error("Error fetching conversation with messages:", error);
     res.status(500).json({ error: "Internal Server Error" });
   }
+};
+
+export const getMessagesFromChat = async (req: Request, res: Response) => {
+  try {
+    const messages = await ConversationMessage.findAll({
+      where: {
+        conversationID: req.params.id,
+      },
+      include: [User, Message],
+    });
+
+    res.status(200).json(messages);
+  } catch (error) {}
 };

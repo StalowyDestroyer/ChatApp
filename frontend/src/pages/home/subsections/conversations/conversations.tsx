@@ -1,26 +1,34 @@
 import { Friends_list_component } from "../../../../components/friend_list_component/Friend_list_component";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faMagnifyingGlass,
-} from "@fortawesome/free-solid-svg-icons";
+import { faMagnifyingGlass } from "@fortawesome/free-solid-svg-icons";
 import "./conversations.css";
 import { getAllUserConversations } from "../../../../services/conversationService";
 import { useAuthenticatedQuery } from "../../../../utils/useAuthQuery/useQueryHook";
 import { Conversation } from "../../../../components/conversation/conversation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+
+import { useSocket } from "../../../../utils/socketContext/useSocket";
 
 export const Conversations = () => {
-  const [currentConversation, setCurrentConversation] = useState<string | null>(localStorage.getItem("lastSeenConversation"))
+  const [currentConversation, setCurrentConversation] = useState<string | null>(
+    localStorage.getItem("lastSeenConversation")
+  );
+  const { emitEvent } = useSocket();
   const { data: conversations } = useAuthenticatedQuery(
     "userConversations",
     async () => await getAllUserConversations(),
     {
       onSuccess: (res) => {
-        if(!currentConversation && res!.length > 0) setCurrentConversation(res![0].id)
+        if (!currentConversation && res!.length > 0)
+          setCurrentConversation(res![0].id);
       },
       onError: (res) => console.log(res),
     }
   );
+
+  useEffect(() => {
+    emitEvent("join-room", currentConversation);
+  }, [emitEvent, currentConversation]);
 
   return (
     <>
@@ -37,13 +45,13 @@ export const Conversations = () => {
           {/* Friends list */}
         </div>
         <div className="home_friend_list gap-2 d-flex flex-column">
-          {conversations && conversations.length > 0 ? (
-            conversations?.map((element) => (
-              <Friends_list_component data={element} key={element.id} setCurrentConversation={setCurrentConversation} />
-            ))
-          ) : (
-            <p>Brak konversacji</p>
-          )}
+          {conversations?.map((element) => (
+            <Friends_list_component
+              data={element}
+              key={element.id}
+              setCurrentConversation={setCurrentConversation}
+            />
+          ))}
         </div>
       </div>
       {currentConversation && <Conversation id={currentConversation} />}

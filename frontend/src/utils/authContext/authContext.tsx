@@ -1,11 +1,13 @@
 import { createContext, ReactNode, useState } from "react";
 import { useQuery } from "react-query";
 import { refreshToken } from "../../services/authService";
+import { UserData } from "../../types/types";
 
 interface AuthContextProps {
   isAuth: boolean | null;
   isAuthLoading: boolean;
-  login: () => void;
+  user: UserData | undefined;
+  login: (data: UserData) => void;
   logout: () => void;
 }
 
@@ -19,8 +21,11 @@ export const AuthContext = createContext<AuthContextProps | undefined>(
 
 export const AuthContextProvider: React.FC<ProviderProps> = ({ children }) => {
   const [isAuth, setIsAuth] = useState<boolean | null>(null);
-
-  const login = () => setIsAuth(true);
+  const [user, setUser] = useState<UserData | undefined>(undefined);
+  const login = (data: UserData) => {
+    setIsAuth(true);
+    setUser(data);
+  };
   const logout = () => setIsAuth(false);
 
   const { isLoading } = useQuery(
@@ -29,7 +34,7 @@ export const AuthContextProvider: React.FC<ProviderProps> = ({ children }) => {
     {
       onSuccess: (res) => {
         setIsAuth(res.status === 200);
-        console.log(res.data);
+        setUser(res.data);
       },
       onError: () => {
         setIsAuth(false);
@@ -42,7 +47,7 @@ export const AuthContextProvider: React.FC<ProviderProps> = ({ children }) => {
 
   return (
     <AuthContext.Provider
-      value={{ isAuth, login, logout, isAuthLoading: isLoading }}
+      value={{ isAuth, login, logout, isAuthLoading: isLoading, user: user }}
     >
       {children}
     </AuthContext.Provider>

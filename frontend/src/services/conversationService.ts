@@ -23,8 +23,11 @@ export const getAllUserConversations = async () => {
 };
 
 export const getConversationById = async (id: string) => {
-  const result = await apiClient.get<Conversation>(
-    `conversation/${id}`,
-  );
+  const result = await apiClient.get<Conversation>(`conversation/${id}`);
   return result.data;
-}
+};
+
+export const getMessages = async (id: string) => {
+  const result = await apiClient.get("conversation/messages/" + id);
+  return result.data;
+};

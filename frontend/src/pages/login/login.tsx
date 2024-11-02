@@ -28,8 +28,8 @@ export const Login = () => {
   const { mutateAsync: loginAsync } = useMutation(
     async () => await loginUser(loginData),
     {
-      onSuccess: () => {
-        login();
+      onSuccess: (res) => {
+        login(res);
         navigate("/home");
       },
       onError: (res: AxiosError<ApiMessage>) =>
@@ -82,10 +82,7 @@ export const Login = () => {
             </div>
           </div>
           <div className="d-flex flex-column pt-3">
-            <button
-            type="submit"
-              className="btn btn-primary fs-4 rounded-4"
-            >
+            <button type="submit" className="btn btn-primary fs-4 rounded-4">
               Zaloguj się
             </button>
           </div>

@@ -14,6 +14,7 @@ import { useMutation } from "react-query";
 import { logoutUser } from "../../services/authService";
 import { AxiosError } from "axios";
 import { ApiMessage } from "../../types/types";
+import logo from "../../assets/logo.png";
 
 export const Home = () => {
   const navigate = useNavigate();
@@ -34,9 +35,12 @@ export const Home = () => {
           <div className="w-100 h-100 justify-content-between d-flex flex-column">
             <div>
               {/* app's logo */}
-              <label className="fs-5 mt-3 p-1 home_label home_logo">
-                ChatApp
-              </label>
+              <img
+                src={logo}
+                alt="logo"
+                className="mt-3 p-1"
+                style={{ width: "70px" }}
+              />
             </div>
             {/* panel with all the buttons on the left side */}
             <div className="home_buttons_left d-flex gap-5 align-items-center flex-column">
