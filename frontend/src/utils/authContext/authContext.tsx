@@ -22,11 +22,15 @@ export const AuthContext = createContext<AuthContextProps | undefined>(
 export const AuthContextProvider: React.FC<ProviderProps> = ({ children }) => {
   const [isAuth, setIsAuth] = useState<boolean | null>(null);
   const [user, setUser] = useState<UserData | undefined>(undefined);
+
   const login = (data: UserData) => {
     setIsAuth(true);
     setUser(data);
   };
-  const logout = () => setIsAuth(false);
+
+  const logout = () => {
+    setIsAuth(false);
+  };
 
   const { isLoading } = useQuery(
     "refreshToken",
@@ -35,13 +39,14 @@ export const AuthContextProvider: React.FC<ProviderProps> = ({ children }) => {
       onSuccess: (res) => {
         setIsAuth(res.status === 200);
         setUser(res.data);
+        console.log("RToken");
       },
       onError: () => {
         setIsAuth(false);
         console.log("Nie poszło");
       },
       enabled: isAuth === null || isAuth,
-      refetchInterval: 1000 * 20,
+      refetchInterval: 1000 * 60,
     }
   );
 

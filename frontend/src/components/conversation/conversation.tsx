@@ -55,7 +55,7 @@ export const Conversation: React.FC<props> = ({ id }) => {
 
   useEffect(() => {
     const removeListener = onEvent("message", (data: ReciveMessageData) => {
-      console.log("Odebrano wiadomość z serwera:", JSON.stringify(data));
+      console.log("getMessage");
       setMessages((prev) => [...prev, data]);
     });
 
@@ -128,6 +128,8 @@ export const Conversation: React.FC<props> = ({ id }) => {
                 content: messageText,
               },
             } as SocketMessagePayload);
+            console.log("emitMessage");
+
             setMessageText("");
           }}
         >

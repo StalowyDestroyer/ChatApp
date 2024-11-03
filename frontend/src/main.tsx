@@ -11,8 +11,8 @@ import { SocketProvider } from "./utils/socketContext/socketContext";
 
 createRoot(document.getElementById("root")!).render(
   <QueryClientProvider client={queryClient}>
-    <SocketProvider>
-      <AuthContextProvider>
+    <AuthContextProvider>
+      <SocketProvider>
         <BrowserRouter>
           <Routes>
             <Route path="home/*" element={<Home />} />
@@ -20,7 +20,7 @@ createRoot(document.getElementById("root")!).render(
             <Route path="register" element={<Register />} />
           </Routes>
         </BrowserRouter>
-      </AuthContextProvider>
-    </SocketProvider>
+      </SocketProvider>
+    </AuthContextProvider>
   </QueryClientProvider>
 );

@@ -1,7 +1,6 @@
 import { Conversation } from "../../types/types";
 import "./Friend_list_component.css";
 import reactLogo from "../../assets/react.svg";
-import { useSocket } from "../../utils/socketContext/useSocket";
 
 interface props {
   data: Conversation;
@@ -12,10 +11,8 @@ export const Friends_list_component: React.FC<props> = ({
   data,
   setCurrentConversation,
 }) => {
-  const { emitEvent } = useSocket();
   function changeConversation() {
     setCurrentConversation(data.id);
-    emitEvent("join-room", data.id);
     localStorage.setItem("lastSeenConversation", data.id);
   }
 

@@ -8,12 +8,13 @@ import { Conversation } from "../../../../components/conversation/conversation";
 import { useEffect, useState } from "react";
 
 import { useSocket } from "../../../../utils/socketContext/useSocket";
+import { SocketMessagePayload } from "../../../../types/types";
 
 export const Conversations = () => {
   const [currentConversation, setCurrentConversation] = useState<string | null>(
     localStorage.getItem("lastSeenConversation")
   );
-  const { emitEvent } = useSocket();
+  const { emitEvent, onEvent } = useSocket();
   const { data: conversations } = useAuthenticatedQuery(
     "userConversations",
     async () => await getAllUserConversations(),
@@ -22,16 +23,40 @@ export const Conversations = () => {
         if (!currentConversation && res!.length > 0)
           setCurrentConversation(res![0].id);
       },
-      onError: (res) => console.log(res),
+      staleTime: 0,
+      cacheTime: 0,
     }
   );
 
   useEffect(() => {
-    emitEvent("join-room", currentConversation);
-  }, [emitEvent, currentConversation]);
+    if (currentConversation) {
+      emitEvent("join-room", currentConversation);
+      console.log("joinRoom");
+    }
+
+    if (conversations && conversations.length > 0) {
+      emitEvent(
+        "index-chats",
+        conversations.map((z) => z.id)
+      );
+      console.log("index");
+    }
+
+    const offNotificationEvent = onEvent(
+      "notification",
+      (data: SocketMessagePayload) => {
+        alert(data.message.content);
+      }
+    );
+
+    return () => {
+      offNotificationEvent();
+    };
+  }, [emitEvent, onEvent, currentConversation, conversations]);
 
   return (
     <>
+      {/* <p className="text-white">{currentConversation}</p> */}
       {/* Left side of the main panel, searchbar and friends */}
       <div className="col-4 home_middle_left_container d-flex flex-column">
         <div className="home_searchbar_container">

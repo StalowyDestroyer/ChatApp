@@ -15,10 +15,11 @@ import { logoutUser } from "../../services/authService";
 import { AxiosError } from "axios";
 import { ApiMessage } from "../../types/types";
 import logo from "../../assets/logo.png";
+import { useSocket } from "../../utils/socketContext/useSocket";
 
 export const Home = () => {
   const navigate = useNavigate();
-
+  const { disconnectSocket } = useSocket();
   const { mutateAsync: logoutAsync } = useMutation(
     async () => await logoutUser(),
     {
@@ -79,7 +80,10 @@ export const Home = () => {
               {/* logout button */}
               <button
                 className="home_button"
-                onClick={async () => await logoutAsync()}
+                onClick={async () => {
+                  await logoutAsync();
+                  disconnectSocket();
+                }}
               >
                 <FontAwesomeIcon
                   icon={faPowerOff}
