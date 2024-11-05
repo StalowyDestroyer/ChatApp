@@ -27,17 +27,20 @@ export const socketConfig = (app: Application) => {
 
     socket.on("message", async (message: SocketMessagePayload) => {
       try {
-        const cookies = socket.handshake.headers.cookie;
+        const cookies = socket.request.headers.cookie;
+        console.log(chalk.red(SocketMap.get(socket.id)));
+        console.log(chalk.yellow(message.roomID));
 
-        if (!cookies) return;
-        const parsedCookies = cookie.parse(cookies);
+        const parsedCookies = cookie.parse(cookies!);
         const token = parsedCookies.accessToken;
+        let payload;
 
-        const payload = jwt.verify(token, process.env.JWT_SECRET!) as {
+        payload = jwt.verify(token, process.env.JWT_SECRET!) as {
           id: number;
         };
 
         const { id: userID } = payload;
+        if (!userID) return;
 
         const msg = await Message.create({
           content: message.message.content,
@@ -65,10 +68,11 @@ export const socketConfig = (app: Application) => {
           socket.to(z).emit("notification", {
             message: msg,
             user: userData?.dataValues,
+            roomID: message.roomID,
           })
         );
       } catch (error) {
-        console.log(chalk.red(error));
+        console.log(chalk.red("Błąd podczas obsługi wiadomości:", error));
       }
     });
 
@@ -81,7 +85,6 @@ export const socketConfig = (app: Application) => {
 
     socket.on("index-chats", (data: string[]) => {
       SocketMap.set(socket.id, data);
-      console.log(chalk.bgBlueBright(socket.id));
       console.log(SocketMap.get(socket.id));
     });
 

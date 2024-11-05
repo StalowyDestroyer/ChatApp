@@ -6,7 +6,7 @@ import {
   faGear,
   faPowerOff,
 } from "@fortawesome/free-solid-svg-icons";
-import { Routes, Route, Link, useNavigate } from "react-router-dom";
+import { Routes, Route, Link } from "react-router-dom";
 import { Conversations } from "./subsections/conversations/conversations";
 import { New_conversation } from "./subsections/new_conversation/new_conversation";
 import { Profile_settings } from "./subsections/profile_settings/profile_settings";
@@ -15,20 +15,37 @@ import { logoutUser } from "../../services/authService";
 import { AxiosError } from "axios";
 import { ApiMessage } from "../../types/types";
 import logo from "../../assets/logo.png";
-import { useSocket } from "../../utils/socketContext/useSocket";
+import { useAuthContext } from "../../utils/authContext/useAuth";
+import { useAuthenticatedQuery } from "../../utils/useAuthQuery/useQueryHook";
+import { getAllUserConversations } from "../../services/conversationService";
+import { useState } from "react";
 
 export const Home = () => {
-  const navigate = useNavigate();
-  const { disconnectSocket } = useSocket();
+  const { logout } = useAuthContext();
+  const [currentConversation, setCurrentConversation] = useState<string | null>(
+    localStorage.getItem("lastSeenConversation")
+  );
   const { mutateAsync: logoutAsync } = useMutation(
     async () => await logoutUser(),
     {
-      onSuccess: () => navigate("/login"),
+      onSuccess: logout,
       onError: (error: AxiosError<ApiMessage>) =>
         console.log(error.response?.data.message),
     }
   );
-
+  const { data: conversations, refetch: conversationRefetch } =
+    useAuthenticatedQuery(
+      "userConversations",
+      async () => await getAllUserConversations(),
+      {
+        onSuccess: (res) => {
+          if (!currentConversation && res!.length > 0)
+            setCurrentConversation(res![0].id);
+        },
+        staleTime: 0,
+        cacheTime: 0,
+      }
+    );
   return (
     <div className="home_main_container text-center d-flex flex-column py-3 pe-3">
       <div className="row m-0 h-100">
@@ -82,7 +99,6 @@ export const Home = () => {
                 className="home_button"
                 onClick={async () => {
                   await logoutAsync();
-                  disconnectSocket();
                 }}
               >
                 <FontAwesomeIcon
@@ -100,9 +116,25 @@ export const Home = () => {
         <div className="col-11 p-0 h-100">
           <div className="d-flex home_middle_container p-3">
             <Routes>
-              <Route path="*" element={<Conversations />} />
+              <Route
+                path="*"
+                element={
+                  <Conversations
+                    conversations={conversations}
+                    currentConversation={currentConversation}
+                    setCurrentConversation={setCurrentConversation}
+                  />
+                }
+              />
               <Route path="profile_settings" element={<Profile_settings />} />
-              <Route path="new_conversation" element={<New_conversation />} />
+              <Route
+                path="new_conversation"
+                element={
+                  <New_conversation
+                    refetchConversations={conversationRefetch}
+                  />
+                }
+              />
             </Routes>
           </div>
         </div>

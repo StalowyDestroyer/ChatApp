@@ -56,4 +56,5 @@ export interface Message {
 export interface ReciveMessageData {
   user: UserData;
   message: Message;
+  roomID: string;
 }

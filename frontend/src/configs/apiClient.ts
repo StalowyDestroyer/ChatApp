@@ -8,4 +8,14 @@ const apiClient = axios.create({
   withCredentials: true,
 });
 
+apiClient.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response && error.response.status === 401) {
+      window.dispatchEvent(new Event("unauthorized"));
+    }
+    return Promise.reject(error);
+  }
+);
+
 export default apiClient;

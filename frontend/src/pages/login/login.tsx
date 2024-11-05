@@ -8,12 +8,10 @@ import { AxiosError } from "axios";
 import { useNavigate } from "react-router-dom";
 import { loginUser } from "../../services/authService";
 import { useAuthContext } from "../../utils/authContext/useAuth";
-import { useSocket } from "../../utils/socketContext/useSocket";
 
 export const Login = () => {
   const navigate = useNavigate();
   const { login } = useAuthContext();
-  const { reconnectSocket } = useSocket();
 
   const [loginData, setLoginData] = useState<LoginFormData>({
     email: "",
@@ -34,7 +32,6 @@ export const Login = () => {
       onSuccess: (res) => {
         login(res);
         navigate("/home");
-        reconnectSocket();
       },
       onError: (res: AxiosError<ApiMessage>) =>
         console.log(res.response?.data.message),

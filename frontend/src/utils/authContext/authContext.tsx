@@ -1,7 +1,14 @@
-import { createContext, ReactNode, useState } from "react";
+import {
+  createContext,
+  ReactNode,
+  useCallback,
+  useEffect,
+  useState,
+} from "react";
 import { useQuery } from "react-query";
 import { refreshToken } from "../../services/authService";
 import { UserData } from "../../types/types";
+import { useNavigate } from "react-router-dom";
 
 interface AuthContextProps {
   isAuth: boolean | null;
@@ -22,27 +29,27 @@ export const AuthContext = createContext<AuthContextProps | undefined>(
 export const AuthContextProvider: React.FC<ProviderProps> = ({ children }) => {
   const [isAuth, setIsAuth] = useState<boolean | null>(null);
   const [user, setUser] = useState<UserData | undefined>(undefined);
-
+  const navigate = useNavigate();
   const login = (data: UserData) => {
     setIsAuth(true);
     setUser(data);
   };
 
-  const logout = () => {
+  const logout = useCallback(() => {
     setIsAuth(false);
-  };
+    setUser(undefined);
+    navigate("/login");
+  }, [navigate]);
 
   const { isLoading } = useQuery(
     "refreshToken",
     async () => await refreshToken(),
     {
       onSuccess: (res) => {
-        setIsAuth(res.status === 200);
-        setUser(res.data);
-        console.log("RToken");
+        login(res.data);
       },
       onError: () => {
-        setIsAuth(false);
+        logout();
         console.log("Nie poszło");
       },
       enabled: isAuth === null || isAuth,
@@ -50,9 +57,21 @@ export const AuthContextProvider: React.FC<ProviderProps> = ({ children }) => {
     }
   );
 
+  useEffect(() => {
+    window.addEventListener("unauthorized", logout);
+  }, [navigate, logout]);
+
+  useEffect(() => {
+    if (
+      isAuth &&
+      (location.pathname == "/login" || location.pathname == "/register")
+    )
+      navigate("/home");
+  }, [isAuth, navigate]);
+
   return (
     <AuthContext.Provider
-      value={{ isAuth, login, logout, isAuthLoading: isLoading, user: user }}
+      value={{ isAuth, login, logout, isAuthLoading: isLoading, user }}
     >
       {children}
     </AuthContext.Provider>

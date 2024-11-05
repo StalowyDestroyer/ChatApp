@@ -55,16 +55,15 @@ export const Conversation: React.FC<props> = ({ id }) => {
 
   useEffect(() => {
     const removeListener = onEvent("message", (data: ReciveMessageData) => {
-      console.log("getMessage");
       setMessages((prev) => [...prev, data]);
     });
 
     return removeListener;
-  }, [onEvent]);
+  }, [onEvent, id]);
 
   return (
     <div className="col-8 home_middle_right_container">
-      {/* <p className="text-white">{JSON.stringify(user)}</p> */}
+      {/* <p className="text-white">{JSON.stringify(id)}</p> */}
       {/* Header container*/}
       <div className="home_info_header d-flex justify-content-between mx-5">
         {/* Info container */}
@@ -128,7 +127,6 @@ export const Conversation: React.FC<props> = ({ id }) => {
                 content: messageText,
               },
             } as SocketMessagePayload);
-            console.log("emitMessage");
 
             setMessageText("");
           }}

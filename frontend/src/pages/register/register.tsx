@@ -1,13 +1,18 @@
 import { faEnvelope, faLock, faUser } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import { ApiMessage, UserFormData } from "../../types/types";
 import { useMutation } from "react-query";
 import { validateUserForRegister } from "../../validators/userValidation";
 import { AxiosError } from "axios";
 import { registerUser } from "../../services/authService";
+import { useNavigate } from "react-router-dom";
+import { useAuthContext } from "../../utils/authContext/useAuth";
 
 export const Register = () => {
+  const navigate = useNavigate();
+  const { isAuth } = useAuthContext();
+
   const [registerData, setRegisterData] = useState<UserFormData>({
     username: "",
     email: "",
@@ -37,6 +42,10 @@ export const Register = () => {
     }
   );
 
+  useEffect(() => {
+    if (isAuth) navigate("/home");
+  }, [isAuth, navigate]);
+
   return (
     <div className="d-flex align-items-center justify-content-center main_container text-white">
       <div className="d-flex flex-column form_container col-11 col-sm-8 col-md-5 col-xl-4 col-xxl-3 position-relative rounded p-4">
@@ -45,8 +54,10 @@ export const Register = () => {
           className="login_image position-absolute start-50 translate-middle rounded-circle bg-secondary p-4"
         />
         <h1 className="text-center mt-5 mb-1">Rejestracja</h1>
-        <form className="d-flex flex-column gap-3" 
-            onSubmit={(e) => submitRegisterForm(e)}>
+        <form
+          className="d-flex flex-column gap-3"
+          onSubmit={(e) => submitRegisterForm(e)}
+        >
           <div>
             <label className="fs-5 p-1">Nazwa użytkownika</label>
             <div className="input-group">
@@ -108,10 +119,7 @@ export const Register = () => {
             </div>
           </div>
           <div className="d-flex flex-column pt-3">
-            <button
-              type="submit"
-              className="btn btn-primary fs-4 rounded-4"
-            >
+            <button type="submit" className="btn btn-primary fs-4 rounded-4">
               Zarejestruj się
             </button>
           </div>

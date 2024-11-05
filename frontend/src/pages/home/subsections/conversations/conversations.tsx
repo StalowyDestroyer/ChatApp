@@ -2,38 +2,45 @@ import { Friends_list_component } from "../../../../components/friend_list_compo
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faMagnifyingGlass } from "@fortawesome/free-solid-svg-icons";
 import "./conversations.css";
-import { getAllUserConversations } from "../../../../services/conversationService";
-import { useAuthenticatedQuery } from "../../../../utils/useAuthQuery/useQueryHook";
-import { Conversation } from "../../../../components/conversation/conversation";
-import { useEffect, useState } from "react";
-
+import { Conversation as ConversationComponent } from "../../../../components/conversation/conversation";
+import { useEffect } from "react";
 import { useSocket } from "../../../../utils/socketContext/useSocket";
-import { SocketMessagePayload } from "../../../../types/types";
+import { Conversation, SocketMessagePayload } from "../../../../types/types";
 
-export const Conversations = () => {
-  const [currentConversation, setCurrentConversation] = useState<string | null>(
-    localStorage.getItem("lastSeenConversation")
-  );
+interface props {
+  conversations: Conversation[] | undefined;
+  currentConversation: string | null;
+  setCurrentConversation: React.Dispatch<React.SetStateAction<string | null>>;
+}
+
+export const Conversations: React.FC<props> = ({
+  conversations,
+  currentConversation,
+  setCurrentConversation,
+}) => {
   const { emitEvent, onEvent } = useSocket();
-  const { data: conversations } = useAuthenticatedQuery(
-    "userConversations",
-    async () => await getAllUserConversations(),
-    {
-      onSuccess: (res) => {
-        if (!currentConversation && res!.length > 0)
-          setCurrentConversation(res![0].id);
-      },
-      staleTime: 0,
-      cacheTime: 0,
-    }
-  );
+
+  useEffect(() => {
+    const offNotificationEvent = onEvent(
+      "notification",
+      (data: SocketMessagePayload) => {
+        if (data.roomID != currentConversation) alert(data.message.content);
+      }
+    );
+
+    return () => {
+      offNotificationEvent();
+    };
+  }, [onEvent, currentConversation]);
 
   useEffect(() => {
     if (currentConversation) {
       emitEvent("join-room", currentConversation);
-      console.log("joinRoom");
+      console.log("joinRoom " + currentConversation);
     }
+  }, [currentConversation, emitEvent]);
 
+  useEffect(() => {
     if (conversations && conversations.length > 0) {
       emitEvent(
         "index-chats",
@@ -41,18 +48,8 @@ export const Conversations = () => {
       );
       console.log("index");
     }
-
-    const offNotificationEvent = onEvent(
-      "notification",
-      (data: SocketMessagePayload) => {
-        alert(data.message.content);
-      }
-    );
-
-    return () => {
-      offNotificationEvent();
-    };
-  }, [emitEvent, onEvent, currentConversation, conversations]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [conversations]);
 
   return (
     <>
@@ -79,7 +76,9 @@ export const Conversations = () => {
           ))}
         </div>
       </div>
-      {currentConversation && <Conversation id={currentConversation} />}
+      {currentConversation && (
+        <ConversationComponent id={currentConversation} />
+      )}
     </>
   );
 };
