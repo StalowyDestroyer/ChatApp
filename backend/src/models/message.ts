@@ -9,13 +9,17 @@ import {
   BelongsTo,
 } from "sequelize-typescript";
 import { ConversationMessage } from "./conversationMessage";
-import { User } from "./user";
+
+interface MessageColumns {
+  id?: number;
+  content: string;
+}
 
 @Table({
   tableName: "message",
   timestamps: true,
 })
-export class Message extends Model {
+export class Message extends Model<MessageColumns> {
   @PrimaryKey
   @AutoIncrement
   @Column({

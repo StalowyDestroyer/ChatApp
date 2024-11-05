@@ -9,7 +9,11 @@ import { createConversation } from "../../../../services/conversationService";
 import { useNavigate } from "react-router-dom";
 import { validateConversation } from "../../../../validators/conversationValidation";
 
-export const New_conversation = () => {
+interface props {
+  refetchConversations: () => void;
+}
+
+export const New_conversation: React.FC<props> = ({ refetchConversations }) => {
   const [image, setImage] = useState<string | null>(null);
   const [conversationData, setConversationData] =
     useState<ConversationFormData>({ name: "", file: undefined });
@@ -47,6 +51,7 @@ export const New_conversation = () => {
       onSuccess: () => {
         setConversationData({ name: "", file: undefined });
         setImage(null);
+        refetchConversations();
         navigate("/home");
       },
       onError: (error) => console.log(error),

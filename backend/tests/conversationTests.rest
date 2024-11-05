@@ -9,3 +9,7 @@ Content-Type: application/json
 ### Pobiera czaty dla zalogowanego użytkownika
 GET http://localhost:3000/api/v1/conversation/userConversations
 Content-Type: application/json
+
+### Pobiera wiadomo
+GET http://localhost:3000/api/v1/conversation/messages/1ddf2dbd-13d8-4434-8850-034846afb5b8
+Content-Type: application/json
