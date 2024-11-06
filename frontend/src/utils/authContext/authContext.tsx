@@ -38,7 +38,8 @@ export const AuthContextProvider: React.FC<ProviderProps> = ({ children }) => {
   const logout = useCallback(() => {
     setIsAuth(false);
     setUser(undefined);
-    navigate("/login");
+    if (location.pathname != "/register")
+      navigate("/login");
   }, [navigate]);
 
   const { isLoading } = useQuery(
