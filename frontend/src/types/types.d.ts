@@ -19,6 +19,7 @@ export interface UserData {
   id: number;
   email: string;
   password: string;
+  username: string;
   profilePicturePath: string | null;
   createdAt: Date;
   updatedAt: Date;

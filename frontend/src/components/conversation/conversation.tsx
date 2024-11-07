@@ -12,11 +12,12 @@ import { useAuthenticatedQuery } from "../../utils/useAuthQuery/useQueryHook";
 import {
   getConversationById,
   getMessages,
+  getUsersInConversation,
 } from "../../services/conversationService";
 import { useSocket } from "../../utils/socketContext/useSocket";
 import { ReciveMessageData, SocketMessagePayload } from "../../types/types";
 import { useAuthContext } from "../../utils/authContext/useAuth";
-import keks from "../../assets/react.svg"
+import keks from "../../assets/react.svg";
 
 interface props {
   id: string;
@@ -37,6 +38,12 @@ export const Conversation: React.FC<props> = ({ id }) => {
   const { data: conversationInfo } = useAuthenticatedQuery(
     ["conversation", id],
     async () => await getConversationById(id)
+  );
+
+  const { data: members } = useAuthenticatedQuery(
+    ["conversationMembers", id],
+    async () => await getUsersInConversation(id),
+    { onSuccess: (res) => console.log(res) }
   );
 
   useEffect(() => {
@@ -64,7 +71,7 @@ export const Conversation: React.FC<props> = ({ id }) => {
     return removeListener;
   }, [onEvent, id]);
 
-  if(conversationInfo == null) {
+  if (conversationInfo == null) {
     return (
       <div className="col-8">
         <div className="d-flex h-100 align-items-center justify-content-center">
@@ -75,7 +82,7 @@ export const Conversation: React.FC<props> = ({ id }) => {
   }
   return (
     <div className="col-9 col-md-8 home_middle_right_container">
-        {/* Header container*/}
+      {/* Header container*/}
       <div className="home_info_header d-flex justify-content-between mx-5">
         {/* Info container */}
         <div className="align-items-start d-flex flex-column">
@@ -103,7 +110,8 @@ export const Conversation: React.FC<props> = ({ id }) => {
             />
           </div>
           <div className="d-flex home_label home_label_FS">
-            <button className="conversation_button"
+            <button
+              className="conversation_button"
               onClick={() => setSidePanelOpen(!sidePanelOpen)}
             >
               <FontAwesomeIcon
@@ -115,7 +123,12 @@ export const Conversation: React.FC<props> = ({ id }) => {
         </div>
       </div>
       <div className="messages_container row">
-        <div className={(sidePanelOpen ? "d-none d-xxl-block col-xxl-6" : "col-12") + " d-block h-100"}>
+        <div
+          className={
+            (sidePanelOpen ? "d-none d-xxl-block col-xxl-6" : "col-12") +
+            " d-block h-100"
+          }
+        >
           <div className="home_conversation ms-3" ref={messageContainer}>
             {isLoading ? (
               <p className="text-white">Ładowanie</p>
@@ -144,12 +157,19 @@ export const Conversation: React.FC<props> = ({ id }) => {
                 setMessageText("");
               }}
             >
-              <input type="file" id="home_message_files" className="d-none"></input>
+              <input
+                type="file"
+                id="home_message_files"
+                className="d-none"
+              ></input>
               <label
                 className="conversation_button mx-3"
                 htmlFor="home_message_files"
               >
-                <FontAwesomeIcon icon={faPaperclip} className="fs-4 home_icon" />
+                <FontAwesomeIcon
+                  icon={faPaperclip}
+                  className="fs-4 home_icon"
+                />
               </label>
               <input
                 type="text"
@@ -161,12 +181,38 @@ export const Conversation: React.FC<props> = ({ id }) => {
             </form>
           </div>
         </div>
-        <div className={(sidePanelOpen ? "col-12 col-xxl-6" : "d-none") + " side_panel h-100 pb-3 pe-3 ps-5 ps-xxl-0"}>
+        <div
+          className={
+            (sidePanelOpen ? "col-12 col-xxl-6" : "d-none") +
+            " side_panel h-100 pb-3 pe-3 ps-5 ps-xxl-0"
+          }
+        >
           <div className="rounded h-100 d-flex flex-column align-items-center p-3 gap-2">
             <div className="w-50 rounded-circle">
-              <img src={keks} className="w-100"/>
+              <img src={keks} className="w-100" />
             </div>
             <h1>{conversationInfo.name}</h1>
+            <hr />
+            <h4 className="mb-4">Członkowie</h4>
+            <div className="members w-100">
+              {members?.map((member) => (
+                <div className="memberElement">
+                  <img
+                    src={member.profilePicturePath || keks}
+                    style={{
+                      width: "60px",
+                      height: "60px",
+                      borderRadius: "50%",
+                      objectFit: "cover",
+                    }}
+                  />
+                  <div className="memberInfo ">
+                    <h5>{member?.username}</h5>
+                    <h6>{member?.email}</h6>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </div>

@@ -6,3 +6,10 @@ Content-Type: application/json
 ### Filter User
 GET http://localhost:3000/api/v1/user?username=example
 Content-Type: application/json
+
+###
+GET http://localhost:3000/api/v1/conversation/9dd6c854-9c4e-11ef-b5df-049226cd8215/members
+Content-Type: application/json
+###
+GET http://localhost:3000/api/v1/conversation/get/9dd6c854-9c4e-11ef-b5df-049226cd8215
+Content-Type: application/json

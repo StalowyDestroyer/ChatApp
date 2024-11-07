@@ -60,3 +60,25 @@
     padding: 0 !important;
     border: 0 !important;
 }
+/*  */
+
+.members{
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+}
+.memberElement{
+    display: grid;
+    grid-template-columns: 30% 70%;
+}
+.memberElement img{
+    margin: 0 auto;
+}
+.memberElement .memberInfo{
+    text-align: left;
+}
+hr{
+    background-color: black;
+    z-index: 1;
+    width: 100%;
+}

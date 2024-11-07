@@ -1,5 +1,5 @@
 import apiClient from "../configs/apiClient";
-import { Conversation, ConversationFormData } from "../types/types";
+import { Conversation, ConversationFormData, UserData } from "../types/types";
 
 export const createConversation = async (data: ConversationFormData) => {
   const formData = new FormData();
@@ -29,5 +29,10 @@ export const getConversationById = async (id: string) => {
 
 export const getMessages = async (id: string) => {
   const result = await apiClient.get("conversation/messages/" + id);
+  return result.data;
+};
+
+export const getUsersInConversation = async (id: string) => {
+  const result = await apiClient.get<UserData[]>(`conversation/${id}/members`);
   return result.data;
 };

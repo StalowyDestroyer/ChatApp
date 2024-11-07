@@ -5,12 +5,14 @@ import {
   Model,
   BeforeCreate,
   HasMany,
+  BelongsToMany,
 } from "sequelize-typescript";
 import bcrypt from "bcryptjs";
 import { ConversationMessage } from "./conversationMessage";
 import { ConversationMembers } from "./conversationMembers";
 
 import { RefreshToken } from "./refreshToken";
+import { Conversation } from "./conversation";
 @Table({
   tableName: "user",
   timestamps: true,
@@ -62,4 +64,7 @@ export class User extends Model {
 
   @HasMany(() => RefreshToken)
   refreshTokens!: RefreshToken[];
+
+  @BelongsToMany(() => Conversation, () => ConversationMembers)
+  conversations!: Conversation[];
 }
