@@ -14,12 +14,17 @@ import {
   getMessages,
   getUsersForInvitation,
   getUsersInConversation,
+  inviteToConversation,
 } from "../../services/conversationService";
 import { useSocket } from "../../utils/socketContext/useSocket";
-import { ReciveMessageData, SocketMessagePayload, UserData } from "../../types/types";
+import {
+  ReciveMessageData,
+  SocketMessagePayload,
+  UserData,
+} from "../../types/types";
 import { useAuthContext } from "../../utils/authContext/useAuth";
 import keks from "../../assets/react.svg";
-import { getLoggedUser } from "../../services/userService";
+import { useMutation } from "react-query";
 
 interface props {
   id: string;
@@ -36,7 +41,9 @@ export const Conversation: React.FC<props> = ({ id }) => {
   const [messages, setMessages] = useState<ReciveMessageData[]>([]);
   const messageContainer = useRef<HTMLDivElement | null>(null);
   const [invitationFilter, setInvitationFilter] = useState<string>("");
-  const [userToInvite, setUserToInvite] = useState<UserData | null>(null);
+  const [userToInvite, setUserToInvite] = useState<UserData | undefined>(
+    undefined
+  );
 
   const { data: conversationInfo } = useAuthenticatedQuery(
     ["conversation", id],
@@ -73,20 +80,35 @@ export const Conversation: React.FC<props> = ({ id }) => {
     return removeListener;
   }, [onEvent, id]);
 
-  const { data: usersForInvitation, refetch: usersForInvitationRefetch } = useAuthenticatedQuery(
-    ["usersForInvitation", id],
-    async () => await getLoggedUser(), //getUsersForInvitation(id, invitationFilter)
-  );
+  const { data: usersForInvitation, refetch: usersForInvitationRefetch } =
+    useAuthenticatedQuery(
+      ["usersForInvitation", id],
+      async () => await getUsersForInvitation(id, invitationFilter),
+      {
+        onSuccess: (res) => console.log(res),
+        enabled: false,
+      }
+    );
 
-  function inviteFilterChange(e: React.ChangeEvent<HTMLInputElement>) {
+  async function inviteFilterChange(e: React.ChangeEvent<HTMLInputElement>) {
     setInvitationFilter(e.target.value);
-    usersForInvitationRefetch();
+    setTimeout(async () => {
+      if (e.target.value.length > 0) await usersForInvitationRefetch();
+    });
   }
 
-  
-  function submitInvite(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
+  const { mutateAsync: inviteAsync } = useMutation(
+    async () => await inviteToConversation(id, userToInvite!.id),
+    {
+      onSuccess: (res) => console.log(res.status),
+    }
+  );
 
+  async function submitInvite(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    if (!userToInvite) return;
+    await inviteAsync();
+    setUserToInvite(undefined);
   }
 
   if (conversationInfo == null) {
@@ -233,48 +255,80 @@ export const Conversation: React.FC<props> = ({ id }) => {
                 ))}
               </div>
             </div>
-            <hr/>
+            <hr />
             <h4 className="m-0">Dodaj osoby</h4>
             <div className="new_member w-100 p-4">
-              <form className="w-100 d-flex flex-column align-items-end invitation_form" onSubmit={(e) => submitInvite(e)}>
+              <form
+                className="w-100 d-flex flex-column align-items-end invitation_form"
+                onSubmit={(e) => submitInvite(e)}
+              >
                 <div className="rounded bg-light overflow-hidden w-100">
-                  {!userToInvite ?
-                  <input type="text" className="w-100 form-control border-secondary" onChange={(e) => inviteFilterChange(e)}/>
-                  :
-                  <div className="d-flex align-items-center justify-content-center border border-secondary rounded position-relative gap-2" key={userToInvite.id}>
-                    <img
-                      src={userToInvite.profilePicturePath || keks}
-                      style={{
-                        width: "40px",
-                        height: "40px",
-                        borderRadius: "50%",
-                        objectFit: "cover",
-                        backgroundColor: "gray",
-                      }}
+                  {!userToInvite ? (
+                    <input
+                      type="text"
+                      className="w-100 form-control border-secondary"
+                      onChange={(e) => inviteFilterChange(e)}
+                      value={invitationFilter}
                     />
-                    <div>
-                      <p className="p-0 m-0">{userToInvite.username}</p>
-                      <label>{userToInvite.email}</label>
-                    </div>
-                    <button className="member_to_invite_cancel position-absolute" onClick={() => setUserToInvite(null)}>
-                      <FontAwesomeIcon
-                        icon={faCircleXmark}
-                        className="fs-white home_icon"
+                  ) : (
+                    <div
+                      className="d-flex align-items-center justify-content-center border border-secondary rounded position-relative gap-2"
+                      key={userToInvite.id}
+                    >
+                      <img
+                        src={userToInvite.profilePicturePath || keks}
+                        style={{
+                          width: "40px",
+                          height: "40px",
+                          borderRadius: "50%",
+                          objectFit: "cover",
+                          backgroundColor: "gray",
+                        }}
                       />
-                    </button>
-                  </div>
-                  }
-                  <div className={"new_member_container" + (usersForInvitation && usersForInvitation?.length > 0 ? " m-2" : "")}>
-                    {/* {usersForInvitation?.map(user => */}
-                      <button type="button" key={usersForInvitation.id} className="new_member_selector rounded" onClick={() => setUserToInvite(usersForInvitation)}>
-                        <p className="p-0 m-0">{usersForInvitation.username}</p>
-                        <label>{usersForInvitation.email}</label>
+                      <div>
+                        <p className="p-0 m-0">{userToInvite.username}</p>
+                        <label>{userToInvite.email}</label>
+                      </div>
+                      <button
+                        className="member_to_invite_cancel position-absolute"
+                        onClick={() => setUserToInvite(undefined)}
+                      >
+                        <FontAwesomeIcon
+                          icon={faCircleXmark}
+                          className="fs-white home_icon"
+                        />
                       </button>
-                    {/* )} */} 
-                    {/* usuń listę jeżeli jakiś został wybrany */}
+                    </div>
+                  )}
+                  <div
+                    className={
+                      "new_member_container" +
+                      (usersForInvitation &&
+                      usersForInvitation?.length > 0 &&
+                      invitationFilter.length > 0 &&
+                      !userToInvite
+                        ? " m-2"
+                        : "")
+                    }
+                  >
+                    {!userToInvite &&
+                      invitationFilter.length > 0 &&
+                      usersForInvitation?.map((user) => (
+                        <button
+                          type="button"
+                          key={user.id}
+                          className="new_member_selector rounded"
+                          onClick={() => setUserToInvite(user)}
+                        >
+                          <p className="p-0 m-0">{user.username}</p>
+                          <label>{user.email}</label>
+                        </button>
+                      ))}
                   </div>
                 </div>
-                <button type="submit" className="btn btn-primary m-2">Potwierdź</button>
+                <button type="submit" className="btn btn-primary m-2">
+                  Potwierdź
+                </button>
               </form>
             </div>
           </div>

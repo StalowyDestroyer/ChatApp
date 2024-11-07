@@ -38,10 +38,19 @@ export const getUsersInConversation = async (id: string) => {
 };
 
 export const getUsersForInvitation = async (id: string, filter: string) => {
-  const result = await apiClient.get<UserData[]>(`conversation/${id}/canBeInvited?filter=${filter}`);
+  const result = await apiClient.get<UserData[]>(
+    `conversation/${id}/canBeInvited?filter=${filter}`
+  );
   return result.data;
-}
+};
 
-export const inviteToConversation = async (conversationId: string, invitedId: string) => {
-  //to do
-}
+export const inviteToConversation = async (
+  conversationId: string,
+  invitedId: number
+) => {
+  const result = await apiClient.post("conversation/invitation", {
+    conversationID: conversationId,
+    invitedID: invitedId,
+  });
+  return result;
+};

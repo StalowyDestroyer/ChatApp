@@ -13,6 +13,7 @@ import { ConversationMembers } from "./conversationMembers";
 
 import { RefreshToken } from "./refreshToken";
 import { Conversation } from "./conversation";
+import { ConversationInvites } from "./conversationInvites";
 @Table({
   tableName: "user",
   timestamps: true,
@@ -67,4 +68,17 @@ export class User extends Model {
 
   @BelongsToMany(() => Conversation, () => ConversationMembers)
   conversations!: Conversation[];
+  //
+  @HasMany(() => ConversationInvites, {
+    as: "sentInvites",
+    foreignKey: "inviting",
+  })
+  sentInvites!: ConversationInvites[];
+
+  // Relacja dla otrzymanych zaproszeń z aliasem
+  @HasMany(() => ConversationInvites, {
+    as: "receivedInvites",
+    foreignKey: "invited",
+  })
+  receivedInvites!: ConversationInvites[];
 }

@@ -1,6 +1,9 @@
 import { Response, Request } from "express";
 import { User } from "../models/user";
 import { filter } from "../utils/filterUtils";
+import { ConversationInvites } from "../models/conversationInvites";
+
+import { Conversation } from "../models/conversation";
 
 export const getUserById = async (req: Request, res: Response) => {
   try {
@@ -54,6 +57,32 @@ export const updateUser = async (req: Request, res: Response) => {
     res.status(200).json(user);
   } catch (error) {
     console.log(error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+export const getInvitations = async (req: Request, res: Response) => {
+  try {
+    const invitations = await ConversationInvites.findAll({
+      where: {
+        invited: req.user?.id,
+      },
+      attributes: ["id"],
+      include: [
+        {
+          model: User,
+          as: "inviter",
+        },
+        {
+          model: Conversation,
+          as: "conversation",
+        },
+      ],
+    });
+
+    res.status(200).json(invitations);
+  } catch (error) {
+    console.error("Error fetching invitations:", error);
     res.status(500).json({ message: "Internal server error" });
   }
 };
