@@ -1,7 +1,7 @@
 import apiClient from "../configs/apiClient";
 import { UserUpdateFormData } from "../types/types";
 
-export const getUserById = async () => {
+export const getLoggedUser = async () => {
   const result = await apiClient.get(`user`);
   return result.data;
 };

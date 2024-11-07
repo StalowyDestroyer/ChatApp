@@ -12,12 +12,14 @@ import { useAuthenticatedQuery } from "../../utils/useAuthQuery/useQueryHook";
 import {
   getConversationById,
   getMessages,
+  getUsersForInvitation,
   getUsersInConversation,
 } from "../../services/conversationService";
 import { useSocket } from "../../utils/socketContext/useSocket";
-import { ReciveMessageData, SocketMessagePayload } from "../../types/types";
+import { ReciveMessageData, SocketMessagePayload, UserData } from "../../types/types";
 import { useAuthContext } from "../../utils/authContext/useAuth";
 import keks from "../../assets/react.svg";
+import { getLoggedUser } from "../../services/userService";
 
 interface props {
   id: string;
@@ -31,9 +33,10 @@ export const Conversation: React.FC<props> = ({ id }) => {
   const [messageSearchActive, setMessageSearchActive] =
     useState<boolean>(false);
   const [sidePanelOpen, setSidePanelOpen] = useState<boolean>(false);
-
   const [messages, setMessages] = useState<ReciveMessageData[]>([]);
   const messageContainer = useRef<HTMLDivElement | null>(null);
+  const [invitationFilter, setInvitationFilter] = useState<string>("");
+  const [userToInvite, setUserToInvite] = useState<UserData | null>(null);
 
   const { data: conversationInfo } = useAuthenticatedQuery(
     ["conversation", id],
@@ -42,8 +45,7 @@ export const Conversation: React.FC<props> = ({ id }) => {
 
   const { data: members } = useAuthenticatedQuery(
     ["conversationMembers", id],
-    async () => await getUsersInConversation(id),
-    { onSuccess: (res) => console.log(res) }
+    async () => await getUsersInConversation(id)
   );
 
   useEffect(() => {
@@ -70,6 +72,22 @@ export const Conversation: React.FC<props> = ({ id }) => {
 
     return removeListener;
   }, [onEvent, id]);
+
+  const { data: usersForInvitation, refetch: usersForInvitationRefetch } = useAuthenticatedQuery(
+    ["usersForInvitation", id],
+    async () => await getLoggedUser(), //getUsersForInvitation(id, invitationFilter)
+  );
+
+  function inviteFilterChange(e: React.ChangeEvent<HTMLInputElement>) {
+    setInvitationFilter(e.target.value);
+    usersForInvitationRefetch();
+  }
+
+  
+  function submitInvite(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+
+  }
 
   if (conversationInfo == null) {
     return (
@@ -187,31 +205,77 @@ export const Conversation: React.FC<props> = ({ id }) => {
             " side_panel h-100 pb-3 pe-3 ps-5 ps-xxl-0"
           }
         >
-          <div className="rounded h-100 d-flex flex-column align-items-center p-3 gap-2">
+          <div className="rounded h-100 d-flex flex-column align-items-center p-3 gap-2 overflow-auto">
             <div className="w-50 rounded-circle">
               <img src={keks} className="w-100" />
             </div>
             <h1>{conversationInfo.name}</h1>
             <hr />
             <h4 className="mb-4">Członkowie</h4>
-            <div className="members w-100">
-              {members?.map((member) => (
-                <div className="memberElement">
-                  <img
-                    src={member.profilePicturePath || keks}
-                    style={{
-                      width: "60px",
-                      height: "60px",
-                      borderRadius: "50%",
-                      objectFit: "cover",
-                    }}
-                  />
-                  <div className="memberInfo ">
-                    <h5>{member?.username}</h5>
-                    <h6>{member?.email}</h6>
+            <div className="w-100">
+              <div className="members w-100 overflow-auto">
+                {members?.map((member) => (
+                  <div className="memberElement" key={member.id}>
+                    <img
+                      src={member.profilePicturePath || keks}
+                      style={{
+                        width: "60px",
+                        height: "60px",
+                        borderRadius: "50%",
+                        objectFit: "cover",
+                      }}
+                    />
+                    <div className="memberInfo">
+                      <h5>{member?.username}</h5>
+                      <h6>{member?.email}</h6>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <hr/>
+            <h4 className="m-0">Dodaj osoby</h4>
+            <div className="new_member w-100 p-4">
+              <form className="w-100 d-flex flex-column align-items-end invitation_form" onSubmit={(e) => submitInvite(e)}>
+                <div className="rounded bg-light overflow-hidden w-100">
+                  {!userToInvite ?
+                  <input type="text" className="w-100 form-control border-secondary" onChange={(e) => inviteFilterChange(e)}/>
+                  :
+                  <div className="d-flex align-items-center justify-content-center border border-secondary rounded position-relative gap-2" key={userToInvite.id}>
+                    <img
+                      src={userToInvite.profilePicturePath || keks}
+                      style={{
+                        width: "40px",
+                        height: "40px",
+                        borderRadius: "50%",
+                        objectFit: "cover",
+                        backgroundColor: "gray",
+                      }}
+                    />
+                    <div>
+                      <p className="p-0 m-0">{userToInvite.username}</p>
+                      <label>{userToInvite.email}</label>
+                    </div>
+                    <button className="member_to_invite_cancel position-absolute" onClick={() => setUserToInvite(null)}>
+                      <FontAwesomeIcon
+                        icon={faCircleXmark}
+                        className="fs-white home_icon"
+                      />
+                    </button>
+                  </div>
+                  }
+                  <div className={"new_member_container" + (usersForInvitation && usersForInvitation?.length > 0 ? " m-2" : "")}>
+                    {/* {usersForInvitation?.map(user => */}
+                      <button type="button" key={usersForInvitation.id} className="new_member_selector rounded" onClick={() => setUserToInvite(usersForInvitation)}>
+                        <p className="p-0 m-0">{usersForInvitation.username}</p>
+                        <label>{usersForInvitation.email}</label>
+                      </button>
+                    {/* )} */} 
+                    {/* usuń listę jeżeli jakiś został wybrany */}
                   </div>
                 </div>
-              ))}
+                <button type="submit" className="btn btn-primary m-2">Potwierdź</button>
+              </form>
             </div>
           </div>
         </div>

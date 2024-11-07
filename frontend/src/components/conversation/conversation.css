@@ -7,6 +7,7 @@
 .side_panel > div {
     background-color: #2f333e;
     color: rgb(156, 168, 184);
+    scrollbar-width: none;
 }
 .home_chat_name {
     font-size: 30px;
@@ -63,6 +64,7 @@
 /*  */
 
 .members{
+    max-height: 300px;
     display: flex;
     flex-direction: column;
     gap: 30px;
@@ -81,4 +83,34 @@ hr{
     background-color: black;
     z-index: 1;
     width: 100%;
+}
+.new_member_selector {
+    width: 100%;
+    border: 1px solid transparent;
+    background-color: transparent;
+    color: #2f333e;
+}
+.new_member_container {
+    max-height: 200px;
+}
+.new_member_selector label {
+    font-size: 13px;
+    cursor: pointer;
+}
+.new_member_selector:hover {
+    border: 1px solid #5c5d61;
+    background-color: #cecece;
+}
+.member_to_invite_cancel {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: transparent;
+    outline: none;
+    border: none;
+    cursor: pointer;
+    right: 2%;
+}
+.invitation_form {
+    color: #2f333e;
 }

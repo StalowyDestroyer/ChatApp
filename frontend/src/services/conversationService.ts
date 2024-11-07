@@ -36,3 +36,12 @@ export const getUsersInConversation = async (id: string) => {
   const result = await apiClient.get<UserData[]>(`conversation/${id}/members`);
   return result.data;
 };
+
+export const getUsersForInvitation = async (id: string, filter: string) => {
+  const result = await apiClient.get<UserData[]>(`conversation/${id}/canBeInvited?filter=${filter}`);
+  return result.data;
+}
+
+export const inviteToConversation = async (conversationId: string, invitedId: string) => {
+  //to do
+}

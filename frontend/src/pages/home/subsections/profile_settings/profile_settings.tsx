@@ -4,7 +4,7 @@ import { useMutation, useQuery } from "react-query";
 import { UserUpdateFormData } from "../../../../types/types";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCirclePlus } from "@fortawesome/free-solid-svg-icons";
-import { getUserById, updateUserData } from "../../../../services/userService";
+import { getLoggedUser, updateUserData } from "../../../../services/userService";
 import { validateUserUpdate } from "../../../../validators/userValidation";
 
 export const Profile_settings = () => {
@@ -42,7 +42,7 @@ export const Profile_settings = () => {
     async () => await updateUserData(userData)
   );
 
-  useQuery("userData", async () => await getUserById(), {
+  useQuery("userData", async () => await getLoggedUser(), {
     onSuccess: (res) => {
       setUserData({
         username: res.username,
