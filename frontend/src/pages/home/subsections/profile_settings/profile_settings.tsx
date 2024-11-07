@@ -3,11 +3,11 @@ import keks from "../../../../assets/react.svg";
 import { useMutation, useQuery } from "react-query";
 import { UserUpdateFormData } from "../../../../types/types";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCirclePlus } from "@fortawesome/free-solid-svg-icons";
+import { faCircleCheck, faCirclePlus, faCircleXmark } from "@fortawesome/free-solid-svg-icons";
 import { getLoggedUser, updateUserData } from "../../../../services/userService";
 import { validateUserUpdate } from "../../../../validators/userValidation";
 import { useAuthenticatedQuery } from "../../../../utils/useAuthQuery/useQueryHook";
-import { getInvitationsForUser } from "../../../../services/conversationService";
+import { answearInvitation, getInvitationsForUser } from "../../../../services/conversationService";
 
 export const Profile_settings = () => {
   const [image, setImage] = useState<string | null>(null);
@@ -57,7 +57,15 @@ export const Profile_settings = () => {
   const { data: invitations } = useAuthenticatedQuery(
     "invitations",
     async () => await getInvitationsForUser(),
-  )
+  );
+
+  const { mutateAsync: acceptInvitation } = useMutation(
+    async (id: number) => await answearInvitation(id, true)
+  );
+
+  const { mutateAsync: rejectInvitation } = useMutation(
+    async (id: number) => await answearInvitation(id, false)
+  );
 
   return (
     <>
@@ -109,12 +117,32 @@ export const Profile_settings = () => {
           </form>
         </div>
         <div className="col-12 col-md-6 d-flex flex-column align-items-center">
-          <div className="col-9 col-sm-7 col-md-9 col-xl-7 col-xxl-5 d-flex flex-column gap-3">
+          <div className="d-flex flex-column gap-3 w-100">
             <h2 className="new_conversation_title">Zaproszenia</h2>
-            <div className="invitations_container d-flex flex-column">
+            <div className="invitations_container d-flex flex-column p-3 w-100">
               {invitations?.map(invitation => 
-                <div className="invitation" key={invitation.id}>
-                  <p className="text-white">Użytkownik {invitation.inviter.username} zaprosił Cię do kowersacji o nazwie {invitation.conversation.name}</p>
+                <div className="invitation bg-secondary rounded w-100 d-flex align-items-center p-3" key={invitation.id}>
+                  <p className="text-white m-0 flex-grow-1 text-start">Użytkownik <b>{invitation.inviter.username}</b> zaprosił Cię do kowersacji o nazwie <b>{invitation.conversation.name}</b></p>
+                  <button 
+                    type="button"
+                    className="conversation_button"
+                    onClick={() => acceptInvitation(invitation.id)}
+                    >
+                    <FontAwesomeIcon
+                    className="fs-3"
+                      icon={faCircleCheck}
+                    />
+                  </button>
+                  <button
+                    type="button"
+                    className="conversation_button"
+                    onClick={() => rejectInvitation(invitation.id)}
+                    >
+                    <FontAwesomeIcon
+                      className="fs-3"
+                      icon={faCircleXmark}
+                    />
+                  </button>
                 </div>
               )}
             </div>

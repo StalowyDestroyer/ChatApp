@@ -54,7 +54,13 @@ export const inviteToConversation = async (
   });
   return result;
 };
+
 export const getInvitationsForUser = async () => {
   const result = await apiClient.get<Invitation[]>(`user/invitations`);
   return result.data;
+}
+
+export const answearInvitation = async (id: number, positive: boolean) => {
+  console.log(id, positive);
+  //to do
 }
