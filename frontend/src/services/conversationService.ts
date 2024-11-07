@@ -1,5 +1,5 @@
 import apiClient from "../configs/apiClient";
-import { Conversation, ConversationFormData, UserData } from "../types/types";
+import { Conversation, ConversationFormData, Invitation, UserData } from "../types/types";
 
 export const createConversation = async (data: ConversationFormData) => {
   const formData = new FormData();
@@ -54,3 +54,7 @@ export const inviteToConversation = async (
   });
   return result;
 };
+export const getInvitationsForUser = async () => {
+  const result = await apiClient.get<Invitation[]>(`user/invitations`);
+  return result.data;
+}

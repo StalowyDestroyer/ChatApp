@@ -100,7 +100,7 @@ export const Conversation: React.FC<props> = ({ id }) => {
   const { mutateAsync: inviteAsync } = useMutation(
     async () => await inviteToConversation(id, userToInvite!.id),
     {
-      onSuccess: (res) => console.log(res.status),
+      onSuccess: () => setInvitationFilter(""),
     }
   );
 

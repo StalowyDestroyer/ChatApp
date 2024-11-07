@@ -59,3 +59,9 @@ export interface ReciveMessageData {
   message: Message;
   roomID: string;
 }
+
+export interface Invitation {
+  id: number;
+  inviter: UserData;
+  conversation: Conversation;
+}

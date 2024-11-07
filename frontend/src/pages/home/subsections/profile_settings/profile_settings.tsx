@@ -6,6 +6,8 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCirclePlus } from "@fortawesome/free-solid-svg-icons";
 import { getLoggedUser, updateUserData } from "../../../../services/userService";
 import { validateUserUpdate } from "../../../../validators/userValidation";
+import { useAuthenticatedQuery } from "../../../../utils/useAuthQuery/useQueryHook";
+import { getInvitationsForUser } from "../../../../services/conversationService";
 
 export const Profile_settings = () => {
   const [image, setImage] = useState<string | null>(null);
@@ -52,56 +54,72 @@ export const Profile_settings = () => {
     onError: (res) => console.log(res),
   });
 
+  const { data: invitations } = useAuthenticatedQuery(
+    "invitations",
+    async () => await getInvitationsForUser(),
+  )
+
   return (
     <>
-      <div className="d-flex flex-column align-items-center w-100 overflow-auto new_conversation_contener">
-        <form
-          className="col-9 col-sm-7 col-md-5 col-xl-4 col-xxl-3 d-flex flex-column gap-3"
-          onSubmit={submit}
-        >
-          <h2 className="new_conversation_title">Ustawienia profilu</h2>
-          <div className="position-relative">
-            <div className="ratio ratio-1x1">
-              <img
-                src={image || keks}
-                className="w-100 bg-white rounded-circle overflow-hidden border border-2 border-black"
-              />
+      <div className="row w-100 overflow-auto new_conversation_contener">
+        <div className="col-12 col-md-6 d-flex flex-column align-items-center">
+          <form className="col-9 col-sm-7 col-md-9 col-xl-7 col-xxl-5 d-flex flex-column gap-3" onSubmit={submit}>
+            <h2 className="new_conversation_title">Ustawienia profilu</h2>
+            <div className="position-relative">
+              <div className="ratio ratio-1x1">
+                <img
+                  src={image || keks}
+                  className="w-100 bg-white rounded-circle overflow-hidden border border-2 border-black"
+                  />
+              </div>
+              <label
+                className="position-absolute d-flex image_add"
+                htmlFor="conversation_icon"
+                >
+                <input
+                  type="file"
+                  accept="image/*"
+                  id="conversation_icon"
+                  className="d-none"
+                  onChange={file_change}
+                  />
+                <FontAwesomeIcon
+                  icon={faCirclePlus}
+                  className="rounded-circle border border-2 bg-black border-black"
+                  />
+              </label>
             </div>
-            <label
-              className="position-absolute d-flex image_add"
-              htmlFor="conversation_icon"
-            >
+            <div>
+              <label className="text-white text-start w-100 p-1">
+                Nazwa użytkownika
+              </label>
               <input
-                type="file"
-                accept="image/*"
-                id="conversation_icon"
-                className="d-none"
-                onChange={file_change}
-              />
-              <FontAwesomeIcon
-                icon={faCirclePlus}
-                className="rounded-circle border border-2 bg-black border-black"
-              />
-            </label>
+                type="text"
+                className="form-control"
+                placeholder="Nazwa"
+                value={userData.username}
+                onChange={(e) => {
+                  setUserData({ ...userData, username: e.target.value });
+                }}
+                />
+            </div>
+            <button type="submit" className="btn btn-primary">
+              Zaktualizuj dane
+            </button>
+          </form>
+        </div>
+        <div className="col-12 col-md-6 d-flex flex-column align-items-center">
+          <div className="col-9 col-sm-7 col-md-9 col-xl-7 col-xxl-5 d-flex flex-column gap-3">
+            <h2 className="new_conversation_title">Zaproszenia</h2>
+            <div className="invitations_container d-flex flex-column">
+              {invitations?.map(invitation => 
+                <div className="invitation" key={invitation.id}>
+                  <p className="text-white">Użytkownik {invitation.inviter.username} zaprosił Cię do kowersacji o nazwie {invitation.conversation.name}</p>
+                </div>
+              )}
+            </div>
           </div>
-          <div>
-            <label className="text-white text-start w-100 p-1">
-              Nazwa użytkownika
-            </label>
-            <input
-              type="text"
-              className="form-control"
-              placeholder="Nazwa"
-              value={userData.username}
-              onChange={(e) => {
-                setUserData({ ...userData, username: e.target.value });
-              }}
-            />
-          </div>
-          <button type="submit" className="btn btn-primary">
-            Zaktualizuj dane
-          </button>
-        </form>
+        </div>
       </div>
     </>
   );
