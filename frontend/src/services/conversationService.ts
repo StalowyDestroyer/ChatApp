@@ -1,5 +1,10 @@
 import apiClient from "../configs/apiClient";
-import { Conversation, ConversationFormData, Invitation, UserData } from "../types/types";
+import {
+  Conversation,
+  ConversationFormData,
+  Invitation,
+  UserData,
+} from "../types/types";
 
 export const createConversation = async (data: ConversationFormData) => {
   const formData = new FormData();
@@ -58,9 +63,19 @@ export const inviteToConversation = async (
 export const getInvitationsForUser = async () => {
   const result = await apiClient.get<Invitation[]>(`user/invitations`);
   return result.data;
-}
+};
 
 export const answearInvitation = async (id: number, positive: boolean) => {
-  console.log(id, positive);
-  //to do
-}
+  const result = await apiClient.post("/conversation/invitationAnswer", {
+    id,
+    positive,
+  });
+  return result;
+};
+
+export const checkIfUserIsInChat = async (id: string) => {
+  const result = await apiClient.get(
+    "/conversation/isUserInConversation/" + id
+  );
+  return result.data;
+};

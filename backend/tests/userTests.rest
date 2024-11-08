@@ -17,3 +17,7 @@ Content-Type: application/json
 ###
 GET http://localhost:3000/api/v1/user/invitations
 Content-Type: application/json
+
+###
+GET http://localhost:3000/api/v1/conversation/isUser/66712888-cb0c-4b0e-a496-3e2536c881e5
+Content-Type: application/json

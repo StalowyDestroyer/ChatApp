@@ -52,6 +52,7 @@ export interface SocketMessagePayload {
 export interface Message {
   id: number;
   content: string;
+  createdAt: Date;
 }
 
 export interface ReciveMessageData {

@@ -13,7 +13,6 @@ const sequelize = new Sequelize({
   username: "root",
   password: "",
   database: "chatapp",
-  // logging: console.log,
   timezone: "+01:00",
   models: [
     User,

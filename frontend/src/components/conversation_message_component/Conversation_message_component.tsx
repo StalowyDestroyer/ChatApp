@@ -16,6 +16,11 @@ export const Conversation_message_component: React.FC<props> = ({ data }) => {
         (user?.id == data.user.id ? "user" : "friend")
       }
     >
+      {/* <p className="text-white">
+        {data.message.createdAt.toLocaleDateString() +
+          " - " +
+          data.message.createdAt.toLocaleTimeString()}
+      </p> */}
       <div className="home_chat_message_text">
         <p className="home_label m-0 p-0">{data.message.content}</p>
       </div>

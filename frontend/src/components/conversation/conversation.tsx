@@ -25,6 +25,8 @@ import {
 import { useAuthContext } from "../../utils/authContext/useAuth";
 import keks from "../../assets/react.svg";
 import { useMutation } from "react-query";
+import { useModal } from "../modal/useModal";
+import { buildButton } from "../modal/Utils";
 
 interface props {
   id: string;
@@ -44,6 +46,7 @@ export const Conversation: React.FC<props> = ({ id }) => {
   const [userToInvite, setUserToInvite] = useState<UserData | undefined>(
     undefined
   );
+  const modal = useModal();
 
   const { data: conversationInfo } = useAuthenticatedQuery(
     ["conversation", id],
@@ -107,8 +110,17 @@ export const Conversation: React.FC<props> = ({ id }) => {
   async function submitInvite(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (!userToInvite) return;
-    await inviteAsync();
-    setUserToInvite(undefined);
+    modal.openModal({
+      title: "Zaproszenie",
+      content: `Czy napewno chcesz zaprosic ${userToInvite?.username} do konwersacji ${conversationInfo?.name}?`,
+      buttons: [
+        buildButton("btn btn-danger", "Nie"),
+        buildButton("btn btn-primary", "Tak", async () => {
+          await inviteAsync();
+          setUserToInvite(undefined);
+        }),
+      ],
+    });
   }
 
   if (conversationInfo == null) {
@@ -213,7 +225,7 @@ export const Conversation: React.FC<props> = ({ id }) => {
               </label>
               <input
                 type="text"
-                className="me-4 w-100"
+                className="me-4 w-100 text-white"
                 placeholder="Your message"
                 value={messageText}
                 onChange={(e) => setMessageText(e.target.value)}

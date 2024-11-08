@@ -91,8 +91,6 @@ export const getUsersInConversation = async (req: Request, res: Response) => {
 
 export const getUserToInvite = async (req: Request, res: Response) => {
   try {
-    console.log(chalk.bgRed(req.query.filter));
-
     const { conversationID } = req.params;
     const users = await User.scope("safeData").findAll({
       include: [
@@ -143,6 +141,48 @@ export const inviteUserToChat = async (req: Request, res: Response) => {
       conversationID: conversationID,
     });
     res.sendStatus(201);
+  } catch (error) {
+    console.error("Error fetching conversation with messages:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
+export const invitationAnswer = async (req: Request, res: Response) => {
+  try {
+    const { id, positive } = req.body;
+
+    if (positive) {
+      const invite = await ConversationInvites.findByPk(id);
+      await ConversationMembers.create({
+        userID: req.user?.id,
+        conversationID: invite?.conversationID,
+      });
+    }
+
+    await ConversationInvites.destroy({
+      where: {
+        id: id,
+      },
+    });
+    res.sendStatus(200);
+  } catch (error) {
+    console.error("Error fetching conversation with messages:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
+export const checkIsUserInChat = async (req: Request, res: Response) => {
+  try {
+    const user = await User.findOne({
+      where: { id: req.user?.id },
+      include: [
+        {
+          model: Conversation,
+          where: { id: req.params.id },
+        },
+      ],
+    });
+    res.json(user);
   } catch (error) {
     console.error("Error fetching conversation with messages:", error);
     res.status(500).json({ error: "Internal Server Error" });

@@ -17,14 +17,34 @@ import { ApiMessage } from "../../types/types";
 import logo from "../../assets/logo.png";
 import { useAuthContext } from "../../utils/authContext/useAuth";
 import { useAuthenticatedQuery } from "../../utils/useAuthQuery/useQueryHook";
-import { getAllUserConversations } from "../../services/conversationService";
+import {
+  checkIfUserIsInChat,
+  getAllUserConversations,
+} from "../../services/conversationService";
 import { useState } from "react";
 
 export const Home = () => {
   const { logout } = useAuthContext();
   const [currentConversation, setCurrentConversation] = useState<string | null>(
-    localStorage.getItem("lastSeenConversation")
+    null
   );
+
+  useAuthenticatedQuery(
+    "isUserInChat",
+    async () =>
+      await checkIfUserIsInChat(
+        localStorage.getItem("lastSeenConversation") ?? ""
+      ),
+    {
+      onSuccess: (res) => {
+        setCurrentConversation(
+          !res ? null : localStorage.getItem("lastSeenConversation")
+        );
+        console.log(res);
+      },
+    }
+  );
+
   const { mutateAsync: logoutAsync } = useMutation(
     async () => await logoutUser(),
     {
