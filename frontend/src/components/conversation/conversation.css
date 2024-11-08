@@ -1,6 +1,13 @@
 .home_middle_right_container {
-    display: grid;
-    grid-template-rows: 10% minmax(83%,83%) 10%;
+    grid-template-rows: 10% 90%;
+}
+.messages_container {
+    height: 90%;
+}
+.side_panel > div {
+    background-color: #2f333e;
+    color: rgb(156, 168, 184);
+    scrollbar-width: none;
 }
 .home_chat_name {
     font-size: 30px;
@@ -8,6 +15,7 @@
 }
 .home_info_header {
     align-items: center;
+    height: 10%;
 }
 .home_conversation_input {
     height: 60px;
@@ -40,8 +48,8 @@
     gap: 10px;
     padding: 10px;
     overflow-y: auto;
-    scrollbar-width: none; 
-    height: 100%;
+    scrollbar-width: none;
+    height: 90%;
 }
 .message_search_input {
     background-color: #2f333e;
@@ -52,4 +60,57 @@
     width: 0 !important;
     padding: 0 !important;
     border: 0 !important;
+}
+/*  */
+
+.members{
+    max-height: 300px;
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+}
+.memberElement{
+    display: grid;
+    grid-template-columns: 30% 70%;
+}
+.memberElement img{
+    margin: 0 auto;
+}
+.memberElement .memberInfo{
+    text-align: left;
+}
+hr{
+    background-color: black;
+    z-index: 1;
+    width: 100%;
+}
+.new_member_selector {
+    width: 100%;
+    border: 1px solid transparent;
+    background-color: transparent;
+    color: #2f333e;
+}
+.new_member_container {
+    max-height: 200px;
+}
+.new_member_selector label {
+    font-size: 13px;
+    cursor: pointer;
+}
+.new_member_selector:hover {
+    border: 1px solid #5c5d61;
+    background-color: #cecece;
+}
+.member_to_invite_cancel {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: transparent;
+    outline: none;
+    border: none;
+    cursor: pointer;
+    right: 2%;
+}
+.invitation_form {
+    color: #2f333e;
 }

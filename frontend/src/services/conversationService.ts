@@ -1,5 +1,10 @@
 import apiClient from "../configs/apiClient";
-import { Conversation, ConversationFormData } from "../types/types";
+import {
+  Conversation,
+  ConversationFormData,
+  Invitation,
+  UserData,
+} from "../types/types";
 
 export const createConversation = async (data: ConversationFormData) => {
   const formData = new FormData();
@@ -29,5 +34,48 @@ export const getConversationById = async (id: string) => {
 
 export const getMessages = async (id: string) => {
   const result = await apiClient.get("conversation/messages/" + id);
+  return result.data;
+};
+
+export const getUsersInConversation = async (id: string) => {
+  const result = await apiClient.get<UserData[]>(`conversation/${id}/members`);
+  return result.data;
+};
+
+export const getUsersForInvitation = async (id: string, filter: string) => {
+  const result = await apiClient.get<UserData[]>(
+    `conversation/${id}/canBeInvited?filter=${filter}`
+  );
+  return result.data;
+};
+
+export const inviteToConversation = async (
+  conversationId: string,
+  invitedId: number
+) => {
+  const result = await apiClient.post("conversation/invitation", {
+    conversationID: conversationId,
+    invitedID: invitedId,
+  });
+  return result;
+};
+
+export const getInvitationsForUser = async () => {
+  const result = await apiClient.get<Invitation[]>(`user/invitations`);
+  return result.data;
+};
+
+export const answearInvitation = async (id: number, positive: boolean) => {
+  const result = await apiClient.post("/conversation/invitationAnswer", {
+    id,
+    positive,
+  });
+  return result;
+};
+
+export const checkIfUserIsInChat = async (id: string) => {
+  const result = await apiClient.get(
+    "/conversation/isUserInConversation/" + id
+  );
   return result.data;
 };

@@ -9,6 +9,7 @@ import { useQuery } from "react-query";
 import { refreshToken } from "../../services/authService";
 import { UserData } from "../../types/types";
 import { useNavigate } from "react-router-dom";
+import { queryClient } from "../../configs/queryClient";
 
 interface AuthContextProps {
   isAuth: boolean | null;
@@ -38,7 +39,8 @@ export const AuthContextProvider: React.FC<ProviderProps> = ({ children }) => {
   const logout = useCallback(() => {
     setIsAuth(false);
     setUser(undefined);
-    navigate("/login");
+    if (location.pathname != "/register") navigate("/login");
+    queryClient.clear();
   }, [navigate]);
 
   const { isLoading } = useQuery(

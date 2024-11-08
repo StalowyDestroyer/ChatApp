@@ -19,6 +19,7 @@ export interface UserData {
   id: number;
   email: string;
   password: string;
+  username: string;
   profilePicturePath: string | null;
   createdAt: Date;
   updatedAt: Date;
@@ -51,10 +52,17 @@ export interface SocketMessagePayload {
 export interface Message {
   id: number;
   content: string;
+  createdAt: Date;
 }
 
 export interface ReciveMessageData {
   user: UserData;
   message: Message;
   roomID: string;
+}
+
+export interface Invitation {
+  id: number;
+  inviter: UserData;
+  conversation: Conversation;
 }

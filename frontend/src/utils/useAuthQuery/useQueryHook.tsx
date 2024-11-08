@@ -22,11 +22,11 @@ export const useAuthenticatedQuery = <TData = unknown, TError = unknown>(
   });
 
   useEffect(() => {
-    if (!isAuthLoading && isAuth && !hasFetched) {
+    if (!isAuthLoading && isAuth && !hasFetched && options?.enabled) {
       query.refetch();
       setHasFetched(true);
     }
-  }, [isAuth, isAuthLoading, hasFetched, query]);
+  }, [isAuth, isAuthLoading, hasFetched, query, options?.enabled]);
 
   return query;
 };

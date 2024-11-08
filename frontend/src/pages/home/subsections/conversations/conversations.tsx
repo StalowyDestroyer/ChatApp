@@ -55,7 +55,7 @@ export const Conversations: React.FC<props> = ({
     <>
       {/* <p className="text-white">{currentConversation}</p> */}
       {/* Left side of the main panel, searchbar and friends */}
-      <div className="col-4 home_middle_left_container d-flex flex-column">
+      <div className="col-3 col-md-4 home_middle_left_container d-flex flex-column">
         <div className="home_searchbar_container">
           <div className="home_searchbar gap-2">
             {/* Searchbar */}

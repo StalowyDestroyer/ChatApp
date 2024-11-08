@@ -17,14 +17,34 @@ import { ApiMessage } from "../../types/types";
 import logo from "../../assets/logo.png";
 import { useAuthContext } from "../../utils/authContext/useAuth";
 import { useAuthenticatedQuery } from "../../utils/useAuthQuery/useQueryHook";
-import { getAllUserConversations } from "../../services/conversationService";
+import {
+  checkIfUserIsInChat,
+  getAllUserConversations,
+} from "../../services/conversationService";
 import { useState } from "react";
 
 export const Home = () => {
   const { logout } = useAuthContext();
   const [currentConversation, setCurrentConversation] = useState<string | null>(
-    localStorage.getItem("lastSeenConversation")
+    null
   );
+
+  useAuthenticatedQuery(
+    "isUserInChat",
+    async () =>
+      await checkIfUserIsInChat(
+        localStorage.getItem("lastSeenConversation") ?? ""
+      ),
+    {
+      onSuccess: (res) => {
+        setCurrentConversation(
+          !res ? null : localStorage.getItem("lastSeenConversation")
+        );
+        console.log(res);
+      },
+    }
+  );
+
   const { mutateAsync: logoutAsync } = useMutation(
     async () => await logoutUser(),
     {
@@ -49,7 +69,7 @@ export const Home = () => {
   return (
     <div className="home_main_container text-center d-flex flex-column py-3 pe-3">
       <div className="row m-0 h-100">
-        <div className="col-1 p-0">
+        <div className="col-2 col-md-1 p-0">
           <div className="w-100 h-100 justify-content-between d-flex flex-column">
             <div>
               {/* app's logo */}
@@ -113,7 +133,7 @@ export const Home = () => {
         {/*
                   --------| Middle panel |--------
         */}
-        <div className="col-11 p-0 h-100">
+        <div className="col-10 col-md-11 p-0 h-100">
           <div className="d-flex home_middle_container p-3">
             <Routes>
               <Route

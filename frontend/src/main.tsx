@@ -8,19 +8,22 @@ import { QueryClientProvider } from "react-query";
 import { queryClient } from "./configs/queryClient";
 import { AuthContextProvider } from "./utils/authContext/authContext";
 import { SocketProvider } from "./utils/socketContext/socketContext";
+import { ModalProvider } from "./components/modal/ModalContext";
 
 createRoot(document.getElementById("root")!).render(
   <QueryClientProvider client={queryClient}>
-    <BrowserRouter>
-      <AuthContextProvider>
-        <SocketProvider>
-          <Routes>
-            <Route path="home/*" element={<Home />} />
-            <Route path="login" element={<Login />} />
-            <Route path="register" element={<Register />} />
-          </Routes>
-        </SocketProvider>
-      </AuthContextProvider>
-    </BrowserRouter>
+    <ModalProvider>
+      <BrowserRouter>
+        <AuthContextProvider>
+          <SocketProvider>
+            <Routes>
+              <Route path="home/*" element={<Home />} />
+              <Route path="login" element={<Login />} />
+              <Route path="register" element={<Register />} />
+            </Routes>
+          </SocketProvider>
+        </AuthContextProvider>
+      </BrowserRouter>
+    </ModalProvider>
   </QueryClientProvider>
 );

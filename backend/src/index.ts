@@ -6,16 +6,8 @@ import conversationRoutes from "./routes/conversationRoutes";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import { verifyToken } from "./middlewares/jwtMiddleware";
-import http from "http";
-import { Server, Socket } from "socket.io";
-import { Message } from "./models/message";
 import chalk from "chalk";
-import { SocketMessagePayload } from "./types/types";
-import { ConversationMessage } from "./models/conversationMessage";
 import dotenv from "dotenv";
-import cookie from "cookie";
-import jwt from "jsonwebtoken";
-import { User } from "./models/user";
 import { socketConfig } from "./socket";
 
 dotenv.config();
@@ -34,7 +26,6 @@ app.use(
 );
 
 // socket io config
-const server = http.createServer(app);
 
 socketConfig(app);
 
