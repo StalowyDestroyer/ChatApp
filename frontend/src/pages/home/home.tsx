@@ -62,8 +62,6 @@ export const Home = () => {
           if (!currentConversation && res!.length > 0)
             setCurrentConversation(res![0].id);
         },
-        staleTime: 0,
-        cacheTime: 0,
       }
     );
   return (

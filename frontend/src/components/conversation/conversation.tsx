@@ -68,14 +68,15 @@ export const Conversation: React.FC<props> = ({ id }) => {
     ["messages", id],
     async () => await getMessages(id, setIdForRequest(messages)),
     {
-      onSuccess: (res) =>
+      onSuccess: (res) => {
         loadMessagesAndSetScroll(
           messageContainer,
           [res, setMessages],
           setCanRefetchMessages,
           [firstLoad, setFirstLoad]
-        ),
-        enabled: canRefetchMessages
+        );
+      },
+      enabled: canRefetchMessages,
     }
   );
 
@@ -105,8 +106,14 @@ export const Conversation: React.FC<props> = ({ id }) => {
   //Odpieranie wiadomości z socketów
   useEffect(() => {
     const removeListener = onEvent("message", (data: ReciveMessageData) => {
+      console.log(data);
+
       setMessages((prev) => [...prev, data]);
-      if (data.user.id == user!.id) scrollBottom(messageContainer);
+      if (data.user.id == user!.id) {
+        scrollBottom(messageContainer);
+        setMessageText("");
+        setFiles([]);
+      }
     });
 
     return removeListener;
