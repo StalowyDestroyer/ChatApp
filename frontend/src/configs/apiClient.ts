@@ -10,7 +10,7 @@ const apiClient = axios.create({
 
 apiClient.interceptors.response.use(
   (response) => response,
-  (error) => {
+  async (error) => {
     if (error.response && error.response.status === 401) {
       window.dispatchEvent(new Event("unauthorized"));
     }

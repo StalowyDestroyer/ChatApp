@@ -55,7 +55,7 @@ export const AuthContextProvider: React.FC<ProviderProps> = ({ children }) => {
         console.log("Nie poszło");
       },
       enabled: isAuth === null || isAuth,
-      refetchInterval: 1000 * 60,
+      refetchInterval: 1000 * 60 * 13,
     }
   );
 

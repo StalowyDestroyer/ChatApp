@@ -20,7 +20,7 @@ router.post("/invitationAnswer", invitationAnswer);
 //Get
 router.get("/userConversations", getUserConversations);
 router.get("/:id", getConversationById);
-router.get("/messages/:id", getMessagesFromChat);
+router.get("/messages/:id/:last", getMessagesFromChat);
 router.get("/:conversationID/members", getUsersInConversation);
 router.get("/:conversationID/canBeInvited", getUserToInvite);
 router.get("/isUserInConversation/:id", checkIsUserInChat);

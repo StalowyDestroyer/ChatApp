@@ -10,6 +10,14 @@ Content-Type: application/json
 GET http://localhost:3000/api/v1/conversation/userConversations
 Content-Type: application/json
 
-### Pobiera wiadomo
-GET http://localhost:3000/api/v1/conversation/messages/1ddf2dbd-13d8-4434-8850-034846afb5b8
+### Pobiera wiadomosci dla konwersacji
+GET http://localhost:3000/api/v1/conversation/messages/1ddf2dbd-13d8-4434-8850-034846afb5b8/
+Content-Type: application/json
+
+### Pobiera użytkowników danego chatu
+GET http://localhost:3000/api/v1/conversation/9dd6c854-9c4e-11ef-b5df-049226cd8215/members
+Content-Type: application/json
+
+### Pobiera użytkowników którzy mogą być dodani do danego chatu
+GET http://localhost:3000/api/v1/conversation/333911c3-2f7f-46ce-b9d4-270619ad3352/canBeInvited?filter= 
 Content-Type: application/json

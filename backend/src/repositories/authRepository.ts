@@ -12,7 +12,7 @@ const cookieParams: CookieOptions = {
   sameSite: "strict",
 };
 
-const accessTokenOptions: CookieOptions = {
+export const accessTokenOptions: CookieOptions = {
   ...cookieParams,
 };
 
@@ -23,6 +23,11 @@ const refreshTokenOptions: CookieOptions = {
 
 export const login = async (req: Request, res: Response) => {
   try {
+    const { accessToken, refreshToken } = req.cookies;
+    if (accessToken || refreshToken) {
+      res.sendStatus(400);
+      return;
+    }
     const { email, password } = req.body;
     const user = await User.findOne({ where: { email: email } });
 
@@ -31,16 +36,16 @@ export const login = async (req: Request, res: Response) => {
       return;
     }
 
-    const accessToken = generateAccessToken(user);
-    const refreshToken = generateRefreshToken(user);
+    const newAccessToken = generateAccessToken(user);
+    const newRefreshToken = generateRefreshToken(user);
 
     await RefreshToken.create({
       userID: user.id,
-      refreshToken: refreshToken,
+      refreshToken: newRefreshToken,
     });
 
-    res.cookie("accessToken", accessToken, accessTokenOptions);
-    res.cookie("refreshToken", refreshToken, refreshTokenOptions);
+    res.cookie("accessToken", newAccessToken, accessTokenOptions);
+    res.cookie("refreshToken", newRefreshToken, refreshTokenOptions);
     const {
       password: _,
       refreshToken: __,
@@ -125,7 +130,9 @@ export const refreshToken = async (req: Request, res: Response) => {
 
     await verifyRefreshToken(refreshToken);
 
-    const user = await User.findByPk(refreshTokenEntry.userID);
+    const user = await User.scope("safeData").findByPk(
+      refreshTokenEntry.userID
+    );
     if (!user) {
       res.status(403).json({ message: "Użytkownik nie znaleziony" });
       return;
