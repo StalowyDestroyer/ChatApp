@@ -4,9 +4,9 @@ import { User } from "../models/user";
 import { ConversationMembers } from "../models/conversationMembers";
 import { Message } from "../models/message";
 import { ConversationMessage } from "../models/conversationMessage";
-import { Op, Sequelize } from "sequelize";
-import chalk from "chalk";
+import { Op } from "sequelize";
 import { ConversationInvites } from "../models/conversationInvites";
+import chalk from "chalk";
 
 export const createConversation = async (req: Request, res: Response) => {
   try {
@@ -32,7 +32,7 @@ export const getUserConversations = async (req: Request, res: Response) => {
     const userConversations = await Conversation.findAll({
       include: [
         {
-          model: User,
+          model: User.scope("safeData"),
           where: { id: req.user?.id },
           attributes: [],
         },
@@ -57,14 +57,30 @@ export const getConversationById = async (req: Request, res: Response) => {
 
 export const getMessagesFromChat = async (req: Request, res: Response) => {
   try {
+    const { id, last } = req.params;
+
+    let whereOptions: Record<string, any> = {
+      conversationID: id,
+    };
+
+    if (last && last != "-1") {
+      whereOptions = {
+        ...whereOptions,
+        "$message.id$": {
+          [Op.lt]: last,
+        },
+      };
+    }
+
     const messages = await ConversationMessage.findAll({
-      where: {
-        conversationID: req.params.id,
-      },
-      include: [User, Message],
+      where: whereOptions,
+      include: [{ model: User.scope("safeData") }, { model: Message }],
+      subQuery: false,
+      order: [[{ model: Message, as: "message" }, "id", "DESC"]],
+      limit: 20,
     });
 
-    res.status(200).json(messages);
+    res.status(200).json(messages.reverse());
   } catch (error) {
     console.error("Error fetching conversation with messages:", error);
     res.status(500).json({ error: "Internal Server Error" });
@@ -123,6 +139,7 @@ export const getUserToInvite = async (req: Request, res: Response) => {
           [Op.like]: `%${req.query.filter}%`,
         },
       },
+      limit: 5,
     });
 
     res.status(200).json(users);
@@ -173,7 +190,7 @@ export const invitationAnswer = async (req: Request, res: Response) => {
 
 export const checkIsUserInChat = async (req: Request, res: Response) => {
   try {
-    const user = await User.findOne({
+    const user = await User.scope("safeData").findOne({
       where: { id: req.user?.id },
       include: [
         {

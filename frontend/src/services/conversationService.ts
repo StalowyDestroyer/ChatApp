@@ -3,6 +3,7 @@ import {
   Conversation,
   ConversationFormData,
   Invitation,
+  ReciveMessageData,
   UserData,
 } from "../types/types";
 
@@ -32,9 +33,11 @@ export const getConversationById = async (id: string) => {
   return result.data;
 };
 
-export const getMessages = async (id: string) => {
-  const result = await apiClient.get("conversation/messages/" + id);
-  return result.data;
+export const getMessages = async (id: string, lastID: number) => {
+  const result = await apiClient.get(
+    "conversation/messages/" + id + "/" + lastID
+  );
+  return result.data as ReciveMessageData[];
 };
 
 export const getUsersInConversation = async (id: string) => {

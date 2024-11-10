@@ -6,7 +6,6 @@ import {
   PrimaryKey,
   AutoIncrement,
   HasMany,
-  BelongsTo,
 } from "sequelize-typescript";
 import { ConversationMessage } from "./conversationMessage";
 

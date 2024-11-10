@@ -7,17 +7,10 @@ Content-Type: application/json
 GET http://localhost:3000/api/v1/user?username=example
 Content-Type: application/json
 
-###
-GET http://localhost:3000/api/v1/conversation/9dd6c854-9c4e-11ef-b5df-049226cd8215/members
-Content-Type: application/json
-###
-GET http://localhost:3000/api/v1/conversation/333911c3-2f7f-46ce-b9d4-270619ad3352/canBeInvited?filter= 
-Content-Type: application/json
-
-###
+### Pobiera zaproszenia do chatu danego użytkownika
 GET http://localhost:3000/api/v1/user/invitations
 Content-Type: application/json
 
-###
+### Sprawdza czy użytkownik jest częścią danego chatu
 GET http://localhost:3000/api/v1/conversation/isUser/66712888-cb0c-4b0e-a496-3e2536c881e5
 Content-Type: application/json

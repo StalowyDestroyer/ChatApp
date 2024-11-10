@@ -77,7 +77,10 @@ export const Conversations: React.FC<props> = ({
         </div>
       </div>
       {currentConversation && (
-        <ConversationComponent id={currentConversation} />
+        <ConversationComponent
+          id={currentConversation}
+          key={currentConversation}
+        />
       )}
     </>
   );

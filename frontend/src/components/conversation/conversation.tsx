@@ -17,16 +17,18 @@ import {
   inviteToConversation,
 } from "../../services/conversationService";
 import { useSocket } from "../../utils/socketContext/useSocket";
-import {
-  ReciveMessageData,
-  SocketMessagePayload,
-  UserData,
-} from "../../types/types";
+import { ReciveMessageData, UserData } from "../../types/types";
 import { useAuthContext } from "../../utils/authContext/useAuth";
 import keks from "../../assets/react.svg";
-import { useMutation } from "react-query";
+import { useMutation, useQuery } from "react-query";
 import { useModal } from "../modal/useModal";
 import { buildButton } from "../modal/Utils";
+import {
+  inviteFilterChange,
+  loadMessagesAndSetScroll,
+  scrollToBottom as scrollBottom,
+  setIdForRequest,
+} from "../../pages/home/subsections/conversations/conversationUtils";
 
 interface props {
   id: string;
@@ -46,60 +48,84 @@ export const Conversation: React.FC<props> = ({ id }) => {
   const [userToInvite, setUserToInvite] = useState<UserData | undefined>(
     undefined
   );
+  const [canRefetchMessages, setCanRefetchMessages] = useState(true);
+  const [firstLoad, setFirstLoad] = useState(true);
   const modal = useModal();
 
+  //Pobiera dane o konwersacji
   const { data: conversationInfo } = useAuthenticatedQuery(
     ["conversation", id],
     async () => await getConversationById(id)
   );
 
+  //Pobiera użytkowników konwersacji
   const { data: members } = useAuthenticatedQuery(
     ["conversationMembers", id],
     async () => await getUsersInConversation(id)
   );
 
-  useEffect(() => {
-    if (messageContainer.current) {
-      messageContainer.current.scroll({
-        top: messageContainer.current.scrollHeight,
-        behavior: "instant",
-      });
-    }
-  }, [messages]);
-
-  const { isLoading } = useAuthenticatedQuery(
+  //Pobiera wiadomości dla danego chatu
+  const { isLoading, refetch } = useQuery(
     ["messages", id],
-    async () => await getMessages(id),
+    async () => await getMessages(id, setIdForRequest(messages)),
     {
-      onSuccess: (res) => setMessages(res),
+      onSuccess: (res) =>
+        loadMessagesAndSetScroll(
+          messageContainer,
+          [res, setMessages],
+          setCanRefetchMessages,
+          [firstLoad, setFirstLoad]
+        ),
     }
   );
 
+  //Wywołuje pobieranie wiadomości jeżeli jesteśmy na górze
+  useEffect(() => {
+    const container = messageContainer.current;
+    if (container) {
+      const handleScroll = () => {
+        if (container.scrollTop <= 200 && canRefetchMessages) {
+          setCanRefetchMessages(false);
+          refetch().then((res) => {
+            if (res.data && res.data.length > 0) {
+              setTimeout(() => {
+                setCanRefetchMessages(true);
+              }, 1000);
+            }
+          });
+          console.log("fetch");
+        }
+      };
+
+      container.addEventListener("scroll", handleScroll);
+      return () => {
+        container.removeEventListener("scroll", handleScroll);
+      };
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [canRefetchMessages, refetch, messageContainer.current]);
+
+  //Odpieranie wiadomości z socketów
   useEffect(() => {
     const removeListener = onEvent("message", (data: ReciveMessageData) => {
       setMessages((prev) => [...prev, data]);
+      if (data.user.id == user!.id) scrollBottom(messageContainer);
     });
 
     return removeListener;
-  }, [onEvent, id]);
+  }, [onEvent, id, user]);
 
+  //Filtrowanie użytkowników do zaproszeń
   const { data: usersForInvitation, refetch: usersForInvitationRefetch } =
     useAuthenticatedQuery(
       ["usersForInvitation", id],
       async () => await getUsersForInvitation(id, invitationFilter),
       {
-        onSuccess: (res) => console.log(res),
         enabled: false,
       }
     );
 
-  async function inviteFilterChange(e: React.ChangeEvent<HTMLInputElement>) {
-    setInvitationFilter(e.target.value);
-    setTimeout(async () => {
-      if (e.target.value.length > 0) await usersForInvitationRefetch();
-    });
-  }
-
+  //Zapraszanie użytkownika
   const { mutateAsync: inviteAsync } = useMutation(
     async () => await inviteToConversation(id, userToInvite!.id),
     {
@@ -112,7 +138,7 @@ export const Conversation: React.FC<props> = ({ id }) => {
     if (!userToInvite) return;
     modal.openModal({
       title: "Zaproszenie",
-      content: `Czy napewno chcesz zaprosic ${userToInvite?.username} do konwersacji ${conversationInfo?.name}?`,
+      content: `Czy napewno chcesz zaprosic <b>${userToInvite?.username}</b> do konwersacji <b>${conversationInfo?.name}</b>?`,
       buttons: [
         buildButton("btn btn-danger", "Nie"),
         buildButton("btn btn-primary", "Tak", async () => {
@@ -123,7 +149,7 @@ export const Conversation: React.FC<props> = ({ id }) => {
     });
   }
 
-  if (conversationInfo == null) {
+  if (!conversationInfo) {
     return (
       <div className="col-8">
         <div className="d-flex h-100 align-items-center justify-content-center">
@@ -184,6 +210,8 @@ export const Conversation: React.FC<props> = ({ id }) => {
           <div className="home_conversation ms-3" ref={messageContainer}>
             {isLoading ? (
               <p className="text-white">Ładowanie</p>
+            ) : messages.length == 0 ? (
+              <p className="text-white">Brak wiadomości</p>
             ) : (
               messages.map((element) => (
                 <Conversation_message_component
@@ -204,16 +232,12 @@ export const Conversation: React.FC<props> = ({ id }) => {
                   message: {
                     content: messageText,
                   },
-                } as SocketMessagePayload);
+                });
 
                 setMessageText("");
               }}
             >
-              <input
-                type="file"
-                id="home_message_files"
-                className="d-none"
-              ></input>
+              <input type="file" id="home_message_files" className="d-none" />
               <label
                 className="conversation_button mx-3"
                 htmlFor="home_message_files"
@@ -279,7 +303,13 @@ export const Conversation: React.FC<props> = ({ id }) => {
                     <input
                       type="text"
                       className="w-100 form-control border-secondary"
-                      onChange={(e) => inviteFilterChange(e)}
+                      onChange={(e) =>
+                        inviteFilterChange(
+                          e,
+                          setInvitationFilter,
+                          usersForInvitationRefetch
+                        )
+                      }
                       value={invitationFilter}
                     />
                   ) : (
