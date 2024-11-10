@@ -17,7 +17,7 @@ import {
   inviteToConversation,
 } from "../../services/conversationService";
 import { useSocket } from "../../utils/socketContext/useSocket";
-import { ReciveMessageData, UserData } from "../../types/types";
+import { ReciveMessageData, UserData, File } from "../../types/types";
 import { useAuthContext } from "../../utils/authContext/useAuth";
 import keks from "../../assets/react.svg";
 import { useMutation, useQuery } from "react-query";
@@ -29,6 +29,7 @@ import {
   scrollToBottom as scrollBottom,
   setIdForRequest,
 } from "../../pages/home/subsections/conversations/conversationUtils";
+import { FilePreview } from "../file_preview/file_preview";
 
 interface props {
   id: string;
@@ -39,17 +40,15 @@ export const Conversation: React.FC<props> = ({ id }) => {
   const { user } = useAuthContext();
   const [messageText, setMessageText] = useState("");
   const [searchString, setSearchString] = useState<string>("");
-  const [messageSearchActive, setMessageSearchActive] =
-    useState<boolean>(false);
+  const [messageSearchActive, setMessageSearchActive] = useState<boolean>(false);
   const [sidePanelOpen, setSidePanelOpen] = useState<boolean>(false);
   const [messages, setMessages] = useState<ReciveMessageData[]>([]);
-  const messageContainer = useRef<HTMLDivElement | null>(null);
   const [invitationFilter, setInvitationFilter] = useState<string>("");
-  const [userToInvite, setUserToInvite] = useState<UserData | undefined>(
-    undefined
-  );
+  const [userToInvite, setUserToInvite] = useState<UserData | undefined>(undefined);
   const [canRefetchMessages, setCanRefetchMessages] = useState(true);
   const [firstLoad, setFirstLoad] = useState(true);
+  const [files, setFiles] = useState<File[]>([]);
+  const messageContainer = useRef<HTMLDivElement | null>(null);
   const modal = useModal();
 
   //Pobiera dane o konwersacji
@@ -92,7 +91,6 @@ export const Conversation: React.FC<props> = ({ id }) => {
               setCanRefetchMessages(true);
             }
           });
-          console.log("fetch");
         }
       };
 
@@ -148,20 +146,53 @@ export const Conversation: React.FC<props> = ({ id }) => {
     });
   }
 
-  
+  function sendMessage(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    emitEvent("message", {
+      roomID: id,
+      userID: user?.id,
+      message: {
+        content: messageText,
+      },
+    });
+    setMessageText("");
+  }
 
-  function compareDates(dateString1: string, dateString2: string) {
+  function compareDates(dateString1: string, dateString2: string | null) {
     const date1 = new Date(dateString1);
-    const date2 = new Date(dateString2);
-    const differenceInMs = Math.abs(date1.getTime() - date2.getTime());
-    const differenceInDays = differenceInMs / (24 * 60 * 60 * 1000);
-
-    if(differenceInDays > 1) {
-      return <p className="text-white">{date1.toISOString().slice(0, 16).replace("T", " ")}</p>
-    }
-    if(differenceInMs > 60000) {
+    const differenceInDays = Math.abs(date1.getTime() - Date.now()) / (24 * 60 * 60 * 1000);
+    if(dateString2 == null) {
+      if(differenceInDays > 1) {
+        return <p className="text-white">{date1.toISOString().slice(0, 16).replace("T", " ")}</p>
+      }
       return <p className="text-white">{date1.toISOString().slice(11, 16)}</p>
     }
+    const date2 = new Date(dateString2);
+    const differenceInMs = Math.abs(date1.getTime() - date2.getTime());
+
+    if(differenceInMs > 60000) {
+      if(differenceInDays > 1) {
+        return <p className="text-white">{date1.toISOString().slice(0, 16).replace("T", " ")}</p>
+      }
+      return <p className="text-white">{date1.toISOString().slice(11, 16)}</p>
+    }
+  }
+
+  function fileInputChange(e: React.ChangeEvent<HTMLInputElement>) {
+    if (e.target.files == null) return;
+    const selectedFiles = Array.from(e.target.files);
+    setFiles((prev) => {
+        const existingFiles = new Set(prev.map(file => file.name + file.type + file.size));
+        const newFileData = selectedFiles
+            .filter(file => !existingFiles.has(file.name + file.type + file.size))
+            .map(file => ({
+                name: file.name,
+                type: file.type,
+                size: file.size,
+                preview: file.type.startsWith('image/') ? URL.createObjectURL(file) : null,
+            }));
+        return [...prev, ...newFileData];
+    });
   }
 
   if (!conversationInfo) {
@@ -230,47 +261,41 @@ export const Conversation: React.FC<props> = ({ id }) => {
             ) : (
               messages.map((element, i) => (
                 <div key={element.message.id}>
-                  {i > 0 ? compareDates(element.message.createdAt, messages[i - 1].message.createdAt) : <p className="text-white">{new Date(element.message.createdAt).toISOString().slice(0, 16).replace("T", " ")}</p>}
-                  <Conversation_message_component
-                    data={element}
-                    />
+                  {
+                    i > 0 ?
+                    compareDates(element.message.createdAt, messages[i - 1].message.createdAt) :
+                    compareDates(element.message.createdAt, null)
+                  }
+                  <Conversation_message_component data={element}/>
                 </div>
               ))
             )}
           </div>
           <div className="home_conversation_input ms-3">
             <form
-              className="message_input d-flex align-items-center w-100"
-              onSubmit={(e) => {
-                e.preventDefault();
-                emitEvent("message", {
-                  roomID: id,
-                  userID: user?.id,
-                  message: {
-                    content: messageText,
-                  },
-                });
-
-                setMessageText("");
-              }}
-            >
-              <input type="file" id="home_message_files" className="d-none" />
-              <label
-                className="conversation_button mx-3"
-                htmlFor="home_message_files"
+              className="message_input d-flex w-100 position-relative"
+              onSubmit={(e) => sendMessage(e)}
               >
-                <FontAwesomeIcon
-                  icon={faPaperclip}
-                  className="fs-4 home_icon"
-                />
-              </label>
-              <input
-                type="text"
-                className="me-4 w-100 text-white"
-                placeholder="Your message"
-                value={messageText}
-                onChange={(e) => setMessageText(e.target.value)}
-              />
+              {files.length > 0 && 
+              <div className="files_container d-flex align-items-center gap-2">
+                {files.map((file, i) => <FilePreview key={i} file={file} setFiles={setFiles} files={files}/>)}
+              </div>}
+              <div className="d-flex align-items-center w-100">
+                <input type="file" multiple onChange={(e) => fileInputChange(e)} id="home_message_files" className="d-none" />
+                <label
+                  className="conversation_button mx-3"
+                  htmlFor="home_message_files"
+                  >
+                  <FontAwesomeIcon icon={faPaperclip} className="fs-4 home_icon"/>
+                </label>
+                <input
+                  type="text"
+                  className="me-4 w-100 text-white"
+                  placeholder="Your message"
+                  value={messageText}
+                  onChange={(e) => setMessageText(e.target.value)}
+                  />
+              </div>
             </form>
           </div>
         </div>

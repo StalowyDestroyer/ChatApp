@@ -66,3 +66,10 @@ export interface Invitation {
   inviter: UserData;
   conversation: Conversation;
 }
+
+export interface File {
+  name: string;
+  type: string;
+  preview: string | null;
+  size: number;
+}
