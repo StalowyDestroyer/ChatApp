@@ -50,6 +50,7 @@ export const Conversation: React.FC<props> = ({ id }) => {
   );
   const [canRefetchMessages, setCanRefetchMessages] = useState(true);
   const [firstLoad, setFirstLoad] = useState(true);
+  const [files, setFiles] = useState<File[]>([]);
   const modal = useModal();
 
   //Pobiera dane o konwersacji
@@ -69,14 +70,15 @@ export const Conversation: React.FC<props> = ({ id }) => {
     ["messages", id],
     async () => await getMessages(id, setIdForRequest(messages)),
     {
-      onSuccess: (res) =>
+      onSuccess: (res) => {
         loadMessagesAndSetScroll(
           messageContainer,
           [res, setMessages],
           setCanRefetchMessages,
           [firstLoad, setFirstLoad]
-        ),
-        enabled: canRefetchMessages
+        );
+      },
+      enabled: canRefetchMessages,
     }
   );
 
@@ -107,8 +109,14 @@ export const Conversation: React.FC<props> = ({ id }) => {
   //Odpieranie wiadomości z socketów
   useEffect(() => {
     const removeListener = onEvent("message", (data: ReciveMessageData) => {
+      console.log(data);
+
       setMessages((prev) => [...prev, data]);
-      if (data.user.id == user!.id) scrollBottom(messageContainer);
+      if (data.user.id == user!.id) {
+        scrollBottom(messageContainer);
+        setMessageText("");
+        setFiles([]);
+      }
     });
 
     return removeListener;
@@ -148,19 +156,21 @@ export const Conversation: React.FC<props> = ({ id }) => {
     });
   }
 
-  
-
   function compareDates(dateString1: string, dateString2: string) {
     const date1 = new Date(dateString1);
     const date2 = new Date(dateString2);
     const differenceInMs = Math.abs(date1.getTime() - date2.getTime());
     const differenceInDays = differenceInMs / (24 * 60 * 60 * 1000);
 
-    if(differenceInDays > 1) {
-      return <p className="text-white">{date1.toISOString().slice(0, 16).replace("T", " ")}</p>
+    if (differenceInDays > 1) {
+      return (
+        <p className="text-white">
+          {date1.toISOString().slice(0, 16).replace("T", " ")}
+        </p>
+      );
     }
-    if(differenceInMs > 60000) {
-      return <p className="text-white">{date1.toISOString().slice(11, 16)}</p>
+    if (differenceInMs > 60000) {
+      return <p className="text-white">{date1.toISOString().slice(11, 16)}</p>;
     }
   }
 
@@ -230,10 +240,20 @@ export const Conversation: React.FC<props> = ({ id }) => {
             ) : (
               messages.map((element, i) => (
                 <div key={element.message.id}>
-                  {i > 0 ? compareDates(element.message.createdAt, messages[i - 1].message.createdAt) : <p className="text-white">{new Date(element.message.createdAt).toISOString().slice(0, 16).replace("T", " ")}</p>}
-                  <Conversation_message_component
-                    data={element}
-                    />
+                  {i > 0 ? (
+                    compareDates(
+                      element.message.createdAt,
+                      messages[i - 1].message.createdAt
+                    )
+                  ) : (
+                    <p className="text-white">
+                      {new Date(element.message.createdAt)
+                        .toISOString()
+                        .slice(0, 16)
+                        .replace("T", " ")}
+                    </p>
+                  )}
+                  <Conversation_message_component data={element} />
                 </div>
               ))
             )}
@@ -243,18 +263,58 @@ export const Conversation: React.FC<props> = ({ id }) => {
               className="message_input d-flex align-items-center w-100"
               onSubmit={(e) => {
                 e.preventDefault();
-                emitEvent("message", {
-                  roomID: id,
-                  userID: user?.id,
-                  message: {
-                    content: messageText,
-                  },
+                const fileData: {
+                  file: string | ArrayBuffer | null;
+                  fileName: string;
+                  fileType: string;
+                }[] = [];
+
+                const fileReadPromises = Array.from(files).map((file) => {
+                  return new Promise<void>((resolve) => {
+                    const reader = new FileReader();
+
+                    reader.onload = () => {
+                      const imageInfo = {
+                        file: reader.result,
+                        fileName: file.name,
+                        fileType: file.type,
+                      };
+                      fileData.push(imageInfo);
+                      resolve();
+                    };
+
+                    reader.readAsDataURL(file);
+                  });
                 });
 
-                setMessageText("");
+                Promise.all(fileReadPromises)
+                  .then(() => {
+                    emitEvent("message", {
+                      roomID: id,
+                      userID: user?.id,
+                      message: {
+                        content: messageText,
+                        files: fileData,
+                      },
+                    });
+                  })
+                  .catch((error) => {
+                    console.error("Błąd podczas odczytu plików:", error);
+                  });
               }}
             >
-              <input type="file" id="home_message_files" className="d-none" />
+              <input
+                type="file"
+                id="home_message_files"
+                className="d-none"
+                multiple={true}
+                onChange={(e) => {
+                  if (e.target.files) {
+                    setFiles(Array.from(e.target.files));
+                    console.log(files);
+                  }
+                }}
+              />
               <label
                 className="conversation_button mx-3"
                 htmlFor="home_message_files"

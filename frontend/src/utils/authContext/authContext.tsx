@@ -49,13 +49,14 @@ export const AuthContextProvider: React.FC<ProviderProps> = ({ children }) => {
     {
       onSuccess: (res) => {
         login(res.data);
+        console.log("Odswiezono");
       },
       onError: () => {
         logout();
         console.log("Nie poszło");
       },
       enabled: isAuth === null || isAuth,
-      refetchInterval: 1000 * 60 * 13,
+      refetchInterval: 1000 * 60 * 2,
     }
   );
 

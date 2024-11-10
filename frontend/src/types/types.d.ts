@@ -53,6 +53,13 @@ export interface Message {
   id: number;
   content: string;
   createdAt: string;
+  messageFiles: {
+    path: string;
+    id: number;
+    createdAt: string;
+    updatedAt: string;
+    type: string;
+  }[];
 }
 
 export interface ReciveMessageData {

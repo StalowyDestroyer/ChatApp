@@ -5,10 +5,12 @@ import {
   Model,
   ForeignKey,
   BelongsTo,
+  HasMany,
 } from "sequelize-typescript";
 import { Message } from "./message";
 import { Conversation } from "./conversation";
 import { User } from "./user";
+import { MessageFiles } from "./messageFiles";
 
 @Table({
   tableName: "conversationMessages",

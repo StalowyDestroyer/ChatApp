@@ -7,6 +7,7 @@ import { ConversationMessage } from "../models/conversationMessage";
 import { Op } from "sequelize";
 import { ConversationInvites } from "../models/conversationInvites";
 import chalk from "chalk";
+import { MessageFiles } from "../models/messageFiles";
 
 export const createConversation = async (req: Request, res: Response) => {
   try {
@@ -74,7 +75,10 @@ export const getMessagesFromChat = async (req: Request, res: Response) => {
 
     const messages = await ConversationMessage.findAll({
       where: whereOptions,
-      include: [{ model: User.scope("safeData") }, { model: Message }],
+      include: [
+        { model: User.scope("safeData") },
+        { model: Message, include: [MessageFiles], required: false },
+      ],
       subQuery: false,
       order: [[{ model: Message, as: "message" }, "id", "DESC"]],
       limit: 20,

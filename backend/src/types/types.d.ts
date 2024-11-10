@@ -13,4 +13,5 @@ export interface SocketMessagePayload {
 export interface Message {
   id: number;
   content: string;
+  files: any[];
 }
