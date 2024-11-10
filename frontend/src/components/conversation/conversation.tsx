@@ -76,6 +76,7 @@ export const Conversation: React.FC<props> = ({ id }) => {
           setCanRefetchMessages,
           [firstLoad, setFirstLoad]
         ),
+        enabled: canRefetchMessages
     }
   );
 
@@ -88,9 +89,7 @@ export const Conversation: React.FC<props> = ({ id }) => {
           setCanRefetchMessages(false);
           refetch().then((res) => {
             if (res.data && res.data.length > 0) {
-              setTimeout(() => {
-                setCanRefetchMessages(true);
-              }, 1000);
+              setCanRefetchMessages(true);
             }
           });
           console.log("fetch");
@@ -147,6 +146,22 @@ export const Conversation: React.FC<props> = ({ id }) => {
         }),
       ],
     });
+  }
+
+  
+
+  function compareDates(dateString1: string, dateString2: string) {
+    const date1 = new Date(dateString1);
+    const date2 = new Date(dateString2);
+    const differenceInMs = Math.abs(date1.getTime() - date2.getTime());
+    const differenceInDays = differenceInMs / (24 * 60 * 60 * 1000);
+
+    if(differenceInDays > 1) {
+      return <p className="text-white">{date1.toISOString().slice(0, 16).replace("T", " ")}</p>
+    }
+    if(differenceInMs > 60000) {
+      return <p className="text-white">{date1.toISOString().slice(11, 16)}</p>
+    }
   }
 
   if (!conversationInfo) {
@@ -213,11 +228,13 @@ export const Conversation: React.FC<props> = ({ id }) => {
             ) : messages.length == 0 ? (
               <p className="text-white">Brak wiadomości</p>
             ) : (
-              messages.map((element) => (
-                <Conversation_message_component
-                  data={element}
-                  key={element.message.id}
-                />
+              messages.map((element, i) => (
+                <div key={element.message.id}>
+                  {i > 0 ? compareDates(element.message.createdAt, messages[i - 1].message.createdAt) : <p className="text-white">{new Date(element.message.createdAt).toISOString().slice(0, 16).replace("T", " ")}</p>}
+                  <Conversation_message_component
+                    data={element}
+                    />
+                </div>
               ))
             )}
           </div>

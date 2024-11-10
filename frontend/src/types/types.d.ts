@@ -52,7 +52,7 @@ export interface SocketMessagePayload {
 export interface Message {
   id: number;
   content: string;
-  createdAt: Date;
+  createdAt: string;
 }
 
 export interface ReciveMessageData {
