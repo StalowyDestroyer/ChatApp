@@ -167,6 +167,7 @@ export const Conversation: React.FC<props> = ({ id }) => {
       },
     });
     setMessageText("");
+    setFiles([]);
   }
 
   function compareDates(dateString1: string, dateString2: string | null) {
