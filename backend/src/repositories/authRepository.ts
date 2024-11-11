@@ -106,6 +106,8 @@ export const refreshToken = async (req: Request, res: Response) => {
     const { refreshToken } = req.cookies;
 
     if (!refreshToken) {
+      res.clearCookie("accessToken");
+      res.clearCookie("refreshToken");
       res
         .status(401)
         .json({ message: "Token odświeżania nie został dostarczony" });

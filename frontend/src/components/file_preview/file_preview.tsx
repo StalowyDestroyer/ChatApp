@@ -1,12 +1,12 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { File } from "../../types/types"
+import { MessageFilePreview } from "../../types/types"
 import "./file_preview.css"
 import { faCircleXmark, faFileLines } from "@fortawesome/free-solid-svg-icons";
 
 interface props {
-  file: File;
-  setFiles: React.Dispatch<React.SetStateAction<File[]>>;
-  files: File[];
+  file: MessageFilePreview;
+  setFiles: React.Dispatch<React.SetStateAction<MessageFilePreview[]>>;
+  files: MessageFilePreview[];
 }
 
 export const FilePreview: React.FC<props> = ({ file, setFiles, files }) => {

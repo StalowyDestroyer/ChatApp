@@ -3,9 +3,11 @@
     display: flex;
     gap: 10px;
     align-items: end;
-    /* justify-content: center; */
 }
-.home_chat_message_container img{
+.home_chat_message_container > div {
+    max-width: 75%;
+}
+.home_chat_message_container > img{
     display: flex;
     border-radius: 50%;
     width: 60px !important;
@@ -19,14 +21,17 @@
     justify-content: flex-end;
     flex-direction: row-reverse !important;
 }
+.home_chat_message_user {
+    align-items: flex-end;
+}
+.home_chat_message_friend {
+    align-items: end;
+}
 .home_chat_message_text{
     min-height: 60px;
     max-height: max-content;
     margin: 0px;
-    background-color: white;
-    display: flex;
-    max-width: 70%;
-    justify-content: baseline;
+    max-width: 100%;
     padding: 10px 30px;
     border-radius: 10px;
     background-color: #2f333e;
@@ -35,9 +40,13 @@
     display: flex;
     align-items: center;
 }
-.home_chat_user div{
-    justify-content: right !important;
+.other_file {
+    cursor: pointer;
+    background-color: #2f333e;
+    padding: 10px 30px;
+    border-radius: 10px;
+    min-height: 60px;
 }
-.home_chat_friend div{
-    justify-content: left !important;
+.message_image {
+    max-width: 100%;
 }

@@ -68,7 +68,7 @@ export interface Invitation {
   conversation: Conversation;
 }
 
-export interface File {
+export interface MessageFilePreview {
   name: string;
   type: string;
   preview: string | null;

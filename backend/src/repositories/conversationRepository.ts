@@ -8,6 +8,7 @@ import { Op } from "sequelize";
 import { ConversationInvites } from "../models/conversationInvites";
 import chalk from "chalk";
 import { MessageFiles } from "../models/messageFiles";
+import path from "path"
 
 export const createConversation = async (req: Request, res: Response) => {
   try {
@@ -143,7 +144,6 @@ export const getUserToInvite = async (req: Request, res: Response) => {
           [Op.like]: `%${req.query.filter}%`,
         },
       },
-      limit: 5,
     });
 
     res.status(200).json(users);
@@ -209,3 +209,25 @@ export const checkIsUserInChat = async (req: Request, res: Response) => {
     res.status(500).json({ error: "Internal Server Error" });
   }
 };
+
+
+export const downloadFile = async (req: Request, res: Response) => {
+  try {
+    const file = await MessageFiles.findByPk(Number(req.params.id));
+    
+    if(!file) {
+      res.sendStatus(404);
+      return;
+    }
+    
+    const filePath = path.join(
+      __dirname,
+      "../../uploads/message-files",
+      file.path.split("/").reverse()[0]
+    );
+    res.download(filePath, file.orginalName, (error) => console.log(error));
+  } catch (error) {
+    console.error("Error fetching conversation with messages:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+}

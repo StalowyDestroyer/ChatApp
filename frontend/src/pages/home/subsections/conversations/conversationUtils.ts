@@ -1,5 +1,5 @@
 import React from "react";
-import { ReciveMessageData, File } from "../../../../types/types";
+import { ReciveMessageData, MessageFilePreview } from "../../../../types/types";
 
 // Laduje wiadomosci i ustawai scroll w miejscu gdzie byla ostatnia wiadomosc
 export const loadMessagesAndSetScroll = (
@@ -30,7 +30,7 @@ export const loadMessagesAndSetScroll = (
       container.scrollTop += scrollDelta;
       setIsFirst(false);
     }
-  });
+  }, 100);
 };
 
 //Scroll'uje na koniec komponentu konwersacji (dol)
@@ -44,7 +44,7 @@ export const scrollToBottom = (
         top: messageContainer.current.scrollHeight,
       });
     }
-  });
+  }, 100);
 };
 
 //Zmiana stanu wyszukiwarki do zaproszen
@@ -65,10 +65,9 @@ export const setIdForRequest = (messages: ReciveMessageData[]) =>
 
 export function fileInputChange(
   e: React.ChangeEvent<HTMLInputElement>,
-  setFiles: React.Dispatch<React.SetStateAction<File[]>>
+  setFiles: React.Dispatch<React.SetStateAction<MessageFilePreview[]>>
 ) {
   if (e.target.files == null) return;
-
   const selectedFiles = Array.from(e.target.files);
 
   const fileReadPromises: Promise<void>[] = [];

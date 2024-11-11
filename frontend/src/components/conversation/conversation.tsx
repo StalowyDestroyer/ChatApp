@@ -17,7 +17,7 @@ import {
   inviteToConversation,
 } from "../../services/conversationService";
 import { useSocket } from "../../utils/socketContext/useSocket";
-import { ReciveMessageData, UserData, File } from "../../types/types";
+import { ReciveMessageData, UserData, MessageFilePreview } from "../../types/types";
 import { useAuthContext } from "../../utils/authContext/useAuth";
 import keks from "../../assets/react.svg";
 import { useMutation, useQuery } from "react-query";
@@ -51,9 +51,10 @@ export const Conversation: React.FC<props> = ({ id }) => {
   );
   const [canRefetchMessages, setCanRefetchMessages] = useState(true);
   const [firstLoad, setFirstLoad] = useState(true);
-  const [files, setFiles] = useState<File[]>([]);
+  const [files, setFiles] = useState<MessageFilePreview[]>([]);
   const messageContainer = useRef<HTMLDivElement | null>(null);
   const modal = useModal();
+  const fileInput = useRef<HTMLInputElement | null>(null);
 
   //Pobiera dane o konwersacji
   const { data: conversationInfo } = useAuthenticatedQuery(
@@ -111,10 +112,9 @@ export const Conversation: React.FC<props> = ({ id }) => {
   useEffect(() => {
     const removeListener = onEvent("message", (data: ReciveMessageData) => {
       setMessages((prev) => [...prev, data]);
+      
       if (data.user.id == user!.id) {
         scrollBottom(messageContainer);
-        setMessageText("");
-        setFiles([]);
       }
     });
 
@@ -158,16 +158,18 @@ export const Conversation: React.FC<props> = ({ id }) => {
   function sendMessage(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
 
-    emitEvent("message", {
-      roomID: id,
-      userID: user?.id,
-      message: {
-        content: messageText,
-        files: files,
-      },
-    });
-    setMessageText("");
-    setFiles([]);
+    if(messageText.length > 0 || files.length > 0) {
+      emitEvent("message", {
+        roomID: id,
+        userID: user?.id,
+        message: {
+          content: messageText,
+          files: files,
+        },
+      });
+      setMessageText("");
+      setFiles([]);
+    }
   }
 
   function compareDates(dateString1: string, dateString2: string | null) {
@@ -178,11 +180,11 @@ export const Conversation: React.FC<props> = ({ id }) => {
       if (differenceInDays > 1) {
         return (
           <p className="text-white">
-            {date1.toISOString().slice(0, 16).replace("T", " ")}
+            {date1.toLocaleDateString() + " " + date1.toLocaleTimeString("pl-PL", {hour: "2-digit", minute: "2-digit"})}
           </p>
         );
       }
-      return <p className="text-white">{date1.toISOString().slice(11, 16)}</p>;
+      return <p className="text-white">{date1.toLocaleTimeString("pl-PL", {hour: "2-digit", minute: "2-digit"})}</p>;
     }
     const date2 = new Date(dateString2);
     const differenceInMs = Math.abs(date1.getTime() - date2.getTime());
@@ -191,11 +193,11 @@ export const Conversation: React.FC<props> = ({ id }) => {
       if (differenceInDays > 1) {
         return (
           <p className="text-white">
-            {date1.toISOString().slice(0, 16).replace("T", " ")}
+            {date1.toLocaleDateString() + " " + date1.toLocaleTimeString("pl-PL", {hour: "2-digit", minute: "2-digit"})}
           </p>
         );
       }
-      return <p className="text-white">{date1.toISOString().slice(11, 16)}</p>;
+      return <p className="text-white">{date1.toLocaleTimeString("pl-PL", {hour: "2-digit", minute: "2-digit"})}</p>;
     }
   }
 
@@ -212,7 +214,6 @@ export const Conversation: React.FC<props> = ({ id }) => {
     <div className="col-9 col-md-8 home_middle_right_container">
       {/* Header container*/}
       <div className="home_info_header d-flex justify-content-between mx-5">
-        <p className="text-white">{JSON.stringify(files)}</p>
         {/* Info container */}
         <div className="align-items-start d-flex flex-column">
           <label className="home_label home_chat_name m-0 p-0">
@@ -297,8 +298,9 @@ export const Conversation: React.FC<props> = ({ id }) => {
               <div className="d-flex align-items-center w-100">
                 <input
                   type="file"
+                  ref={fileInput}
                   multiple
-                  onChange={(e) => fileInputChange(e, setFiles)}
+                  onChange={(e) => {fileInputChange(e, setFiles); if(fileInput.current) fileInput.current.value = ""}}
                   id="home_message_files"
                   className="d-none"
                 />

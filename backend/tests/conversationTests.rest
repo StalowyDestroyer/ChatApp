@@ -21,3 +21,7 @@ Content-Type: application/json
 ### Pobiera użytkowników którzy mogą być dodani do danego chatu
 GET http://localhost:3000/api/v1/conversation/333911c3-2f7f-46ce-b9d4-270619ad3352/canBeInvited?filter= 
 Content-Type: application/json
+
+### Pobiera wybrany plik
+GET http://localhost:3000/api/v1/conversation/messageFile/12 
+Content-Type: application/json

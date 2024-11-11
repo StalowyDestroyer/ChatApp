@@ -14,6 +14,7 @@ const sequelize = new Sequelize({
   username: "root",
   password: "",
   database: "chatapp",
+  dialectOptions: {useUTC: false, timezone: "+01:00", charset: "utf8mb4"},
   timezone: "+01:00",
   models: [
     User,
