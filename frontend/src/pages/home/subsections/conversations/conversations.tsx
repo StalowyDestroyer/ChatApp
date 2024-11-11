@@ -53,7 +53,6 @@ export const Conversations: React.FC<props> = ({
 
   return (
     <>
-      {/* <p className="text-white">{currentConversation}</p> */}
       {/* Left side of the main panel, searchbar and friends */}
       <div className="col-3 col-md-4 home_middle_left_container d-flex flex-column">
         <div className="home_searchbar_container">

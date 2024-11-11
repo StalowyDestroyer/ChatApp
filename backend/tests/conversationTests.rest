@@ -11,7 +11,7 @@ GET http://localhost:3000/api/v1/conversation/userConversations
 Content-Type: application/json
 
 ### Pobiera wiadomosci dla konwersacji
-GET http://localhost:3000/api/v1/conversation/messages/1ddf2dbd-13d8-4434-8850-034846afb5b8/
+GET http://localhost:3000/api/v1/conversation/messages/4fd713c9-ff3e-44f7-9f2b-3e81dae95e07/-1
 Content-Type: application/json
 
 ### Pobiera użytkowników danego chatu
@@ -20,4 +20,8 @@ Content-Type: application/json
 
 ### Pobiera użytkowników którzy mogą być dodani do danego chatu
 GET http://localhost:3000/api/v1/conversation/333911c3-2f7f-46ce-b9d4-270619ad3352/canBeInvited?filter= 
+Content-Type: application/json
+
+### Pobiera wybrany plik
+GET http://localhost:3000/api/v1/conversation/messageFile/12 
 Content-Type: application/json

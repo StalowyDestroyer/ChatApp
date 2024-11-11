@@ -52,7 +52,8 @@ export interface SocketMessagePayload {
 export interface Message {
   id: number;
   content: string;
-  createdAt: Date;
+  createdAt: string;
+  messageFiles: MessgaeFile[];
 }
 
 export interface ReciveMessageData {
@@ -65,4 +66,21 @@ export interface Invitation {
   id: number;
   inviter: UserData;
   conversation: Conversation;
+}
+
+export interface MessageFilePreview {
+  name: string;
+  type: string;
+  preview: string | null;
+  size: number;
+}
+
+export interface MessgaeFile {
+  id: number;
+  messageID: number;
+  path: string;
+  type: string;
+  orginalName: string;
+  updatedAt: string;
+  createdAt: string;
 }

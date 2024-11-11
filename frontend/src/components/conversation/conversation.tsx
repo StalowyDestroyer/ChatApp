@@ -17,18 +17,20 @@ import {
   inviteToConversation,
 } from "../../services/conversationService";
 import { useSocket } from "../../utils/socketContext/useSocket";
-import { ReciveMessageData, UserData } from "../../types/types";
+import { ReciveMessageData, UserData, MessageFilePreview } from "../../types/types";
 import { useAuthContext } from "../../utils/authContext/useAuth";
 import keks from "../../assets/react.svg";
 import { useMutation, useQuery } from "react-query";
 import { useModal } from "../modal/useModal";
 import { buildButton } from "../modal/Utils";
 import {
+  fileInputChange,
   inviteFilterChange,
   loadMessagesAndSetScroll,
   scrollToBottom as scrollBottom,
   setIdForRequest,
 } from "../../pages/home/subsections/conversations/conversationUtils";
+import { FilePreview } from "../file_preview/file_preview";
 
 interface props {
   id: string;
@@ -43,14 +45,16 @@ export const Conversation: React.FC<props> = ({ id }) => {
     useState<boolean>(false);
   const [sidePanelOpen, setSidePanelOpen] = useState<boolean>(false);
   const [messages, setMessages] = useState<ReciveMessageData[]>([]);
-  const messageContainer = useRef<HTMLDivElement | null>(null);
   const [invitationFilter, setInvitationFilter] = useState<string>("");
   const [userToInvite, setUserToInvite] = useState<UserData | undefined>(
     undefined
   );
   const [canRefetchMessages, setCanRefetchMessages] = useState(true);
   const [firstLoad, setFirstLoad] = useState(true);
+  const [files, setFiles] = useState<MessageFilePreview[]>([]);
+  const messageContainer = useRef<HTMLDivElement | null>(null);
   const modal = useModal();
+  const fileInput = useRef<HTMLInputElement | null>(null);
 
   //Pobiera dane o konwersacji
   const { data: conversationInfo } = useAuthenticatedQuery(
@@ -69,13 +73,15 @@ export const Conversation: React.FC<props> = ({ id }) => {
     ["messages", id],
     async () => await getMessages(id, setIdForRequest(messages)),
     {
-      onSuccess: (res) =>
+      onSuccess: (res) => {
         loadMessagesAndSetScroll(
           messageContainer,
           [res, setMessages],
           setCanRefetchMessages,
           [firstLoad, setFirstLoad]
-        ),
+        );
+      },
+      enabled: canRefetchMessages,
     }
   );
 
@@ -88,12 +94,9 @@ export const Conversation: React.FC<props> = ({ id }) => {
           setCanRefetchMessages(false);
           refetch().then((res) => {
             if (res.data && res.data.length > 0) {
-              setTimeout(() => {
-                setCanRefetchMessages(true);
-              }, 1000);
+              setCanRefetchMessages(true);
             }
           });
-          console.log("fetch");
         }
       };
 
@@ -109,7 +112,10 @@ export const Conversation: React.FC<props> = ({ id }) => {
   useEffect(() => {
     const removeListener = onEvent("message", (data: ReciveMessageData) => {
       setMessages((prev) => [...prev, data]);
-      if (data.user.id == user!.id) scrollBottom(messageContainer);
+      
+      if (data.user.id == user!.id) {
+        scrollBottom(messageContainer);
+      }
     });
 
     return removeListener;
@@ -147,6 +153,52 @@ export const Conversation: React.FC<props> = ({ id }) => {
         }),
       ],
     });
+  }
+
+  function sendMessage(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+
+    if(messageText.length > 0 || files.length > 0) {
+      emitEvent("message", {
+        roomID: id,
+        userID: user?.id,
+        message: {
+          content: messageText,
+          files: files,
+        },
+      });
+      setMessageText("");
+      setFiles([]);
+    }
+  }
+
+  function compareDates(dateString1: string, dateString2: string | null) {
+    const date1 = new Date(dateString1);
+    const differenceInDays =
+      Math.abs(date1.getTime() - Date.now()) / (24 * 60 * 60 * 1000);
+    if (dateString2 == null) {
+      if (differenceInDays > 1) {
+        return (
+          <p className="text-white">
+            {date1.toLocaleDateString() + " " + date1.toLocaleTimeString("pl-PL", {hour: "2-digit", minute: "2-digit"})}
+          </p>
+        );
+      }
+      return <p className="text-white">{date1.toLocaleTimeString("pl-PL", {hour: "2-digit", minute: "2-digit"})}</p>;
+    }
+    const date2 = new Date(dateString2);
+    const differenceInMs = Math.abs(date1.getTime() - date2.getTime());
+
+    if (differenceInMs > 60000) {
+      if (differenceInDays > 1) {
+        return (
+          <p className="text-white">
+            {date1.toLocaleDateString() + " " + date1.toLocaleTimeString("pl-PL", {hour: "2-digit", minute: "2-digit"})}
+          </p>
+        );
+      }
+      return <p className="text-white">{date1.toLocaleTimeString("pl-PL", {hour: "2-digit", minute: "2-digit"})}</p>;
+    }
   }
 
   if (!conversationInfo) {
@@ -213,47 +265,62 @@ export const Conversation: React.FC<props> = ({ id }) => {
             ) : messages.length == 0 ? (
               <p className="text-white">Brak wiadomości</p>
             ) : (
-              messages.map((element) => (
-                <Conversation_message_component
-                  data={element}
-                  key={element.message.id}
-                />
+              messages.map((element, i) => (
+                <div key={element.message.id}>
+                  {i > 0
+                    ? compareDates(
+                        element.message.createdAt,
+                        messages[i - 1].message.createdAt
+                      )
+                    : compareDates(element.message.createdAt, null)}
+                  <Conversation_message_component data={element} />
+                </div>
               ))
             )}
           </div>
           <div className="home_conversation_input ms-3">
             <form
-              className="message_input d-flex align-items-center w-100"
-              onSubmit={(e) => {
-                e.preventDefault();
-                emitEvent("message", {
-                  roomID: id,
-                  userID: user?.id,
-                  message: {
-                    content: messageText,
-                  },
-                });
-
-                setMessageText("");
-              }}
+              className="message_input d-flex w-100 position-relative"
+              onSubmit={(e) => sendMessage(e)}
             >
-              <input type="file" id="home_message_files" className="d-none" />
-              <label
-                className="conversation_button mx-3"
-                htmlFor="home_message_files"
-              >
-                <FontAwesomeIcon
-                  icon={faPaperclip}
-                  className="fs-4 home_icon"
+              {files.length > 0 && (
+                <div className="files_container d-flex align-items-center gap-2">
+                  {files.map((file, i) => (
+                    <FilePreview
+                      key={i}
+                      file={file}
+                      setFiles={setFiles}
+                      files={files}
+                    />
+                  ))}
+                </div>
+              )}
+              <div className="d-flex align-items-center w-100">
+                <input
+                  type="file"
+                  ref={fileInput}
+                  multiple
+                  onChange={(e) => {fileInputChange(e, setFiles); if(fileInput.current) fileInput.current.value = ""}}
+                  id="home_message_files"
+                  className="d-none"
                 />
-              </label>
-              <input
-                type="text"
-                className="me-4 w-100 text-white"
-                placeholder="Your message"
-                value={messageText}
-                onChange={(e) => setMessageText(e.target.value)}
-              />
+                <label
+                  className="conversation_button mx-3"
+                  htmlFor="home_message_files"
+                >
+                  <FontAwesomeIcon
+                    icon={faPaperclip}
+                    className="fs-4 home_icon"
+                  />
+                </label>
+                <input
+                  type="text"
+                  className="me-4 w-100 text-white"
+                  placeholder="Your message"
+                  value={messageText}
+                  onChange={(e) => setMessageText(e.target.value)}
+                />
+              </div>
             </form>
           </div>
         </div>

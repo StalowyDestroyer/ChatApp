@@ -82,3 +82,21 @@ export const checkIfUserIsInChat = async (id: string) => {
   );
   return result.data;
 };
+
+export const downloadFile = async (id: number, name: string) => {
+  const response = await apiClient.get(
+    "/conversation/messageFile/" + id, {
+      responseType: "blob"
+    }
+  );
+
+  const url = window.URL.createObjectURL(new Blob([response.data]));
+  const link = document.createElement("a");
+  link.href = url;
+  
+  link.setAttribute("download", name);
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  window.URL.revokeObjectURL(url);
+}

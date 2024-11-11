@@ -9,6 +9,7 @@ import {
   inviteUserToChat,
   invitationAnswer,
   checkIsUserInChat,
+  downloadFile,
 } from "../repositories/conversationRepository";
 import { uploadChatAvatar } from "../utils/multer";
 
@@ -24,4 +25,5 @@ router.get("/messages/:id/:last", getMessagesFromChat);
 router.get("/:conversationID/members", getUsersInConversation);
 router.get("/:conversationID/canBeInvited", getUserToInvite);
 router.get("/isUserInConversation/:id", checkIsUserInChat);
+router.get("/messageFile/:id", downloadFile);
 export default router;

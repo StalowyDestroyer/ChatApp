@@ -1,4 +1,4 @@
-import express, { Application } from "express";
+import express, { Application, Request, Response } from "express";
 import sequelize from "./database";
 import userRoutes from "./routes/userRoutes";
 import authRoutes from "./routes/authRoutes";
@@ -9,7 +9,7 @@ import { verifyToken } from "./middlewares/jwtMiddleware";
 import chalk from "chalk";
 import dotenv from "dotenv";
 import { socketConfig } from "./socket";
-
+import path from "path";
 dotenv.config();
 
 const app: Application = express();
@@ -35,6 +35,15 @@ app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/conversation", verifyToken, conversationRoutes);
 
 app.use("/uploads", express.static("uploads"));
+
+app.get("/", (req: Request, res: Response) => {
+  const filePath = path.join(
+    __dirname,
+    "../uploads/message-files",
+    "file_1731318302201_bf9m5l.jpg"
+  );
+  res.download(filePath, "file.jpg", (err) => console.log(err));
+});
 
 //Models sync
 sequelize

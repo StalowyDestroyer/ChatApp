@@ -8,17 +8,13 @@ import {
   HasMany,
 } from "sequelize-typescript";
 import { ConversationMessage } from "./conversationMessage";
-
-interface MessageColumns {
-  id?: number;
-  content: string;
-}
+import { MessageFiles } from "./messageFiles";
 
 @Table({
   tableName: "message",
   timestamps: true,
 })
-export class Message extends Model<MessageColumns> {
+export class Message extends Model {
   @PrimaryKey
   @AutoIncrement
   @Column({
@@ -26,6 +22,7 @@ export class Message extends Model<MessageColumns> {
     allowNull: false,
   })
   id!: number;
+
   @Column({
     type: DataType.STRING,
     allowNull: false,
@@ -34,4 +31,7 @@ export class Message extends Model<MessageColumns> {
 
   @HasMany(() => ConversationMessage)
   conversationMessages!: ConversationMessage[];
+
+  @HasMany(() => MessageFiles)
+  messageFiles!: MessageFiles[];
 }
