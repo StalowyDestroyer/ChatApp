@@ -47,14 +47,11 @@ export const socketConfig = (app: Application) => {
           content: message.message.content,
         });
 
-        const paths: any[] = [];
+        let files: MessageFiles[] = [];
 
-        // Sprawdzamy, czy są jakieś pliki do zapisania
         if (message.message.files && message.message.files.length > 0) {
-          handleFileCreate(message, msg, paths);
+          files = await handleFileCreate(message, msg);
         }
-
-        console.log("Zapisane pliki:", paths);
 
         await ConversationMessage.create({
           conversationID: message.roomID,
@@ -64,8 +61,10 @@ export const socketConfig = (app: Application) => {
 
         const userData = await User.findByPk(userID);
 
+        console.log(chalk.red(JSON.stringify(files)));
+
         io.to(message.roomID).emit("message", {
-          message: { ...msg.dataValues, messageFiles: paths },
+          message: { ...msg.dataValues, messageFiles: files },
           user: userData?.dataValues,
         });
 
@@ -77,7 +76,7 @@ export const socketConfig = (app: Application) => {
 
         notify.forEach((z) =>
           socket.to(z).emit("notification", {
-            message: msg,
+            message: { ...msg.dataValues, messageFiles: files },
             user: userData?.dataValues,
             roomID: message.roomID,
           })
@@ -110,37 +109,40 @@ export const socketConfig = (app: Application) => {
   });
 };
 
-const handleFileCreate = (
-  message: SocketMessagePayload,
-  msg: Message,
-  paths: string[]
-) => {
-  message.message.files.forEach(async (file) => {
-    try {
-      const base64Data = file.file.split(",")[1];
-      const buffer = Buffer.from(base64Data, "base64");
+const handleFileCreate = (message: SocketMessagePayload, msg: Message) => {
+  // Stwórz tablicę obietnic
+  const filePromises = message.message.files.map((file) => {
+    return new Promise<MessageFiles>(async (resolve, reject) => {
+      try {
+        const base64Data = file.file.split(",")[1];
+        const buffer = Buffer.from(base64Data, "base64");
 
-      const customFileName = `file_${Date.now()}_${Math.random()
-        .toString(36)
-        .substring(2, 8)}${path.extname(file.fileName)}`;
+        const customFileName = `file_${Date.now()}_${Math.random()
+          .toString(36)
+          .substring(2, 8)}${path.extname(file.name)}`;
 
-      const uploadDir = path.join(__dirname, "../uploads/message-files/");
-      if (!fs.existsSync(uploadDir)) {
-        fs.mkdirSync(uploadDir, { recursive: true });
+        const uploadDir = path.join(__dirname, "../uploads/message-files/");
+        if (!fs.existsSync(uploadDir)) {
+          fs.mkdirSync(uploadDir, { recursive: true });
+        }
+        const filePath = path.join(uploadDir, customFileName);
+
+        fs.writeFileSync(filePath, buffer);
+
+        const createdFile = await MessageFiles.create({
+          messageID: msg.id,
+          path: `http://localhost:3000/uploads/message-files/${customFileName}`,
+          type: file.type,
+          orginalName: file.name,
+        });
+
+        resolve(createdFile.dataValues);
+      } catch (error) {
+        console.log(chalk.red(error));
+        reject(error);
       }
-      const filePath = path.join(uploadDir, customFileName);
-
-      fs.writeFileSync(filePath, buffer);
-
-      await MessageFiles.create({
-        messageID: msg.id,
-        path: `http://localhost:3000/uploads/message-files/${customFileName}`,
-        type: file.fileType,
-      }).then((res) => {
-        paths.push({ ...res.dataValues, type: file.fileType });
-      });
-    } catch (error) {
-      console.log(chalk.red(error));
-    }
+    });
   });
+
+  return Promise.all(filePromises);
 };

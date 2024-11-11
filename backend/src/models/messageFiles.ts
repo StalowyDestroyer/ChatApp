@@ -25,6 +25,12 @@ export class MessageFiles extends Model {
   })
   type!: string;
 
+  @Column({
+    allowNull: false,
+    type: DataType.STRING,
+  })
+  orginalName!: string;
+
   @ForeignKey(() => Message)
   @Column({
     allowNull: false,

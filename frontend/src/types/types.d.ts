@@ -53,13 +53,7 @@ export interface Message {
   id: number;
   content: string;
   createdAt: string;
-  messageFiles: {
-    path: string;
-    id: number;
-    createdAt: string;
-    updatedAt: string;
-    type: string;
-  }[];
+  messageFiles: MessgaeFile[];
 }
 
 export interface ReciveMessageData {
@@ -79,4 +73,14 @@ export interface File {
   type: string;
   preview: string | null;
   size: number;
+}
+
+export interface MessgaeFile {
+  id: number;
+  messageID: number;
+  path: string;
+  type: string;
+  orginalName: string;
+  updatedAt: string;
+  createdAt: string;
 }

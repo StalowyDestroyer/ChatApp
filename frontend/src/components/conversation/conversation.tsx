@@ -24,6 +24,7 @@ import { useMutation, useQuery } from "react-query";
 import { useModal } from "../modal/useModal";
 import { buildButton } from "../modal/Utils";
 import {
+  fileInputChange,
   inviteFilterChange,
   loadMessagesAndSetScroll,
   scrollToBottom as scrollBottom,
@@ -40,11 +41,14 @@ export const Conversation: React.FC<props> = ({ id }) => {
   const { user } = useAuthContext();
   const [messageText, setMessageText] = useState("");
   const [searchString, setSearchString] = useState<string>("");
-  const [messageSearchActive, setMessageSearchActive] = useState<boolean>(false);
+  const [messageSearchActive, setMessageSearchActive] =
+    useState<boolean>(false);
   const [sidePanelOpen, setSidePanelOpen] = useState<boolean>(false);
   const [messages, setMessages] = useState<ReciveMessageData[]>([]);
   const [invitationFilter, setInvitationFilter] = useState<string>("");
-  const [userToInvite, setUserToInvite] = useState<UserData | undefined>(undefined);
+  const [userToInvite, setUserToInvite] = useState<UserData | undefined>(
+    undefined
+  );
   const [canRefetchMessages, setCanRefetchMessages] = useState(true);
   const [firstLoad, setFirstLoad] = useState(true);
   const [files, setFiles] = useState<File[]>([]);
@@ -106,8 +110,6 @@ export const Conversation: React.FC<props> = ({ id }) => {
   //Odpieranie wiadomości z socketów
   useEffect(() => {
     const removeListener = onEvent("message", (data: ReciveMessageData) => {
-      console.log(data);
-
       setMessages((prev) => [...prev, data]);
       if (data.user.id == user!.id) {
         scrollBottom(messageContainer);
@@ -155,11 +157,13 @@ export const Conversation: React.FC<props> = ({ id }) => {
 
   function sendMessage(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+
     emitEvent("message", {
       roomID: id,
       userID: user?.id,
       message: {
         content: messageText,
+        files: files,
       },
     });
     setMessageText("");
@@ -167,39 +171,31 @@ export const Conversation: React.FC<props> = ({ id }) => {
 
   function compareDates(dateString1: string, dateString2: string | null) {
     const date1 = new Date(dateString1);
-    const differenceInDays = Math.abs(date1.getTime() - Date.now()) / (24 * 60 * 60 * 1000);
-    if(dateString2 == null) {
-      if(differenceInDays > 1) {
-        return <p className="text-white">{date1.toISOString().slice(0, 16).replace("T", " ")}</p>
+    const differenceInDays =
+      Math.abs(date1.getTime() - Date.now()) / (24 * 60 * 60 * 1000);
+    if (dateString2 == null) {
+      if (differenceInDays > 1) {
+        return (
+          <p className="text-white">
+            {date1.toISOString().slice(0, 16).replace("T", " ")}
+          </p>
+        );
       }
-      return <p className="text-white">{date1.toISOString().slice(11, 16)}</p>
+      return <p className="text-white">{date1.toISOString().slice(11, 16)}</p>;
     }
     const date2 = new Date(dateString2);
     const differenceInMs = Math.abs(date1.getTime() - date2.getTime());
 
-    if(differenceInMs > 60000) {
-      if(differenceInDays > 1) {
-        return <p className="text-white">{date1.toISOString().slice(0, 16).replace("T", " ")}</p>
+    if (differenceInMs > 60000) {
+      if (differenceInDays > 1) {
+        return (
+          <p className="text-white">
+            {date1.toISOString().slice(0, 16).replace("T", " ")}
+          </p>
+        );
       }
-      return <p className="text-white">{date1.toISOString().slice(11, 16)}</p>
+      return <p className="text-white">{date1.toISOString().slice(11, 16)}</p>;
     }
-  }
-
-  function fileInputChange(e: React.ChangeEvent<HTMLInputElement>) {
-    if (e.target.files == null) return;
-    const selectedFiles = Array.from(e.target.files);
-    setFiles((prev) => {
-        const existingFiles = new Set(prev.map(file => file.name + file.type + file.size));
-        const newFileData = selectedFiles
-            .filter(file => !existingFiles.has(file.name + file.type + file.size))
-            .map(file => ({
-                name: file.name,
-                type: file.type,
-                size: file.size,
-                preview: file.type.startsWith('image/') ? URL.createObjectURL(file) : null,
-            }));
-        return [...prev, ...newFileData];
-    });
   }
 
   if (!conversationInfo) {
@@ -215,6 +211,7 @@ export const Conversation: React.FC<props> = ({ id }) => {
     <div className="col-9 col-md-8 home_middle_right_container">
       {/* Header container*/}
       <div className="home_info_header d-flex justify-content-between mx-5">
+        <p className="text-white">{JSON.stringify(files)}</p>
         {/* Info container */}
         <div className="align-items-start d-flex flex-column">
           <label className="home_label home_chat_name m-0 p-0">
@@ -268,12 +265,13 @@ export const Conversation: React.FC<props> = ({ id }) => {
             ) : (
               messages.map((element, i) => (
                 <div key={element.message.id}>
-                  {
-                    i > 0 ?
-                    compareDates(element.message.createdAt, messages[i - 1].message.createdAt) :
-                    compareDates(element.message.createdAt, null)
-                  }
-                  <Conversation_message_component data={element}/>
+                  {i > 0
+                    ? compareDates(
+                        element.message.createdAt,
+                        messages[i - 1].message.createdAt
+                      )
+                    : compareDates(element.message.createdAt, null)}
+                  <Conversation_message_component data={element} />
                 </div>
               ))
             )}
@@ -282,18 +280,35 @@ export const Conversation: React.FC<props> = ({ id }) => {
             <form
               className="message_input d-flex w-100 position-relative"
               onSubmit={(e) => sendMessage(e)}
-              >
-              {files.length > 0 && 
-              <div className="files_container d-flex align-items-center gap-2">
-                {files.map((file, i) => <FilePreview key={i} file={file} setFiles={setFiles} files={files}/>)}
-              </div>}
+            >
+              {files.length > 0 && (
+                <div className="files_container d-flex align-items-center gap-2">
+                  {files.map((file, i) => (
+                    <FilePreview
+                      key={i}
+                      file={file}
+                      setFiles={setFiles}
+                      files={files}
+                    />
+                  ))}
+                </div>
+              )}
               <div className="d-flex align-items-center w-100">
-                <input type="file" multiple onChange={(e) => fileInputChange(e)} id="home_message_files" className="d-none" />
+                <input
+                  type="file"
+                  multiple
+                  onChange={(e) => fileInputChange(e, setFiles)}
+                  id="home_message_files"
+                  className="d-none"
+                />
                 <label
                   className="conversation_button mx-3"
                   htmlFor="home_message_files"
-                  >
-                  <FontAwesomeIcon icon={faPaperclip} className="fs-4 home_icon"/>
+                >
+                  <FontAwesomeIcon
+                    icon={faPaperclip}
+                    className="fs-4 home_icon"
+                  />
                 </label>
                 <input
                   type="text"
@@ -301,7 +316,7 @@ export const Conversation: React.FC<props> = ({ id }) => {
                   placeholder="Your message"
                   value={messageText}
                   onChange={(e) => setMessageText(e.target.value)}
-                  />
+                />
               </div>
             </form>
           </div>

@@ -15,3 +15,13 @@ export interface Message {
   content: string;
   files: any[];
 }
+
+export interface MessgaeFile {
+  id: number;
+  messageID: number;
+  path: string;
+  type: string;
+  orginalName: string;
+  updatedAt: string;
+  createdAt: string;
+}
