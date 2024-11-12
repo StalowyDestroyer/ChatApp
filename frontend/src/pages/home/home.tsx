@@ -21,13 +21,14 @@ import {
   checkIfUserIsInChat,
   getAllUserConversations,
 } from "../../services/conversationService";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export const Home = () => {
   const { logout } = useAuthContext();
   const [currentConversation, setCurrentConversation] = useState<string | null>(
     null
   );
+  const [conversationFilter, setConversationFilter] = useState<string>("");
 
   useAuthenticatedQuery(
     "isUserInChat",
@@ -53,17 +54,22 @@ export const Home = () => {
         console.log(error.response?.data.message),
     }
   );
-  const { data: conversations, refetch: conversationRefetch } =
-    useAuthenticatedQuery(
-      "userConversations",
-      async () => await getAllUserConversations(),
-      {
-        onSuccess: (res) => {
-          if (!currentConversation && res!.length > 0)
-            setCurrentConversation(res![0].id);
-        },
-      }
-    );
+
+  const { data: conversations, refetch: conversationRefetch } = useAuthenticatedQuery(
+    "userConversations",
+    async () => await getAllUserConversations(conversationFilter),
+    {
+      onSuccess: (res) => {
+        if (!currentConversation && res!.length > 0)
+          setCurrentConversation(res![0].id);
+      },
+    }
+  );
+  
+  useEffect(() => {
+    conversationRefetch();
+  }, [conversationFilter, conversationRefetch])
+
   return (
     <div className="home_main_container text-center d-flex flex-column py-3 pe-3">
       <div className="row m-0 h-100">
@@ -138,6 +144,8 @@ export const Home = () => {
                 path="*"
                 element={
                   <Conversations
+                    conversationFilter={conversationFilter}
+                    setConversationFilter={setConversationFilter}
                     conversations={conversations}
                     currentConversation={currentConversation}
                     setCurrentConversation={setCurrentConversation}

@@ -11,12 +11,16 @@ interface props {
   conversations: Conversation[] | undefined;
   currentConversation: string | null;
   setCurrentConversation: React.Dispatch<React.SetStateAction<string | null>>;
+  conversationFilter: string;
+  setConversationFilter: React.Dispatch<React.SetStateAction<string>>;
 }
 
 export const Conversations: React.FC<props> = ({
   conversations,
   currentConversation,
   setCurrentConversation,
+  conversationFilter,
+  setConversationFilter,
 }) => {
   const { emitEvent, onEvent } = useSocket();
 
@@ -58,12 +62,9 @@ export const Conversations: React.FC<props> = ({
         <div className="home_searchbar_container">
           <div className="home_searchbar gap-2">
             {/* Searchbar */}
-            <button className="conversation_button">
-              <FontAwesomeIcon icon={faMagnifyingGlass} className="home_icon" />
-            </button>
-            <input type="text" placeholder="Search" />
+            <FontAwesomeIcon icon={faMagnifyingGlass} className="home_icon ms-3" />
+            <input type="text" placeholder="Wyszukaj konwersacje" value={conversationFilter} onChange={(e) => setConversationFilter(e.target.value)}/>
           </div>
-          {/* Friends list */}
         </div>
         <div className="home_friend_list gap-2 d-flex flex-column">
           {conversations?.map((element) => (

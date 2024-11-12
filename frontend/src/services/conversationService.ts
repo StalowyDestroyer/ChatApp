@@ -21,9 +21,9 @@ export const createConversation = async (data: ConversationFormData) => {
   return result.data;
 };
 
-export const getAllUserConversations = async () => {
+export const getAllUserConversations = async (filter: string) => {
   const result = await apiClient.get<Conversation[]>(
-    "conversation/userConversations"
+    "conversation/userConversations?filter=" + filter
   );
   return result.data;
 };
@@ -84,13 +84,13 @@ export const checkIfUserIsInChat = async (id: string) => {
 };
 
 export const downloadFile = async (id: number, name: string) => {
-  const response = await apiClient.get(
+  const result = await apiClient.get(
     "/conversation/messageFile/" + id, {
       responseType: "blob"
     }
   );
 
-  const url = window.URL.createObjectURL(new Blob([response.data]));
+  const url = window.URL.createObjectURL(new Blob([result.data]));
   const link = document.createElement("a");
   link.href = url;
   
@@ -99,4 +99,9 @@ export const downloadFile = async (id: number, name: string) => {
   link.click();
   link.remove();
   window.URL.revokeObjectURL(url);
+}
+
+export const deleteMessage = async (id: number) => {
+  const result = await apiClient.delete("/conversation/message/" + id);
+  return result.data;
 }

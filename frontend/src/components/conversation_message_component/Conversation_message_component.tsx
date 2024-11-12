@@ -1,11 +1,13 @@
 import { ReciveMessageData } from "../../types/types";
 import { useAuthContext } from "../../utils/authContext/useAuth";
 import "./Conversation_message_component.css";
-import keks from "../../assets/default_user.png";
+import keks from "../../assets/react.svg";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faFileLines } from "@fortawesome/free-solid-svg-icons";
+import { faFileLines, faTrashCan } from "@fortawesome/free-solid-svg-icons";
 import { useMutation } from "react-query";
-import { downloadFile } from "../../services/conversationService";
+import { deleteMessage, downloadFile } from "../../services/conversationService";
+import { useModal } from "../modal/useModal";
+import { buildButton } from "../modal/Utils";
 
 interface props {
   data: ReciveMessageData;
@@ -18,9 +20,14 @@ interface fileDownloadProps {
 
 export const Conversation_message_component: React.FC<props> = ({ data }) => {
   const { user } = useAuthContext();
+  const modal = useModal();
 
   const { mutateAsync: downloadFileCilck } = useMutation(
     async (props: fileDownloadProps) => await downloadFile(props.id, props.name)
+  );
+
+  const { mutateAsync: deleteMessageClick } = useMutation(
+    async (id: number) => await deleteMessage(id)
   );
 
   return (
@@ -31,6 +38,21 @@ export const Conversation_message_component: React.FC<props> = ({ data }) => {
           (user?.id == data.user.id ? "user" : "friend")
         }
       >
+        <div className="delete_button_container">
+          <button
+            onClick={() => modal.openModal({
+              title: "Czy napewno chcesz usunąć wiadomość?",
+              content: data.message.content.length == 0 ? "Wiadomość z plikiem" : "\"" + data.message.content + "\"",
+              buttons: [
+                buildButton("btn btn-primary", "Nie"),
+                buildButton("btn btn-danger", "Tak", async () =>
+                  deleteMessageClick(data.message.id)
+                ),
+              ],
+          })}>
+            <FontAwesomeIcon className="fs-3 text-white" icon={faTrashCan} />
+          </button>
+        </div>
         <div className={"d-flex flex-column gap-2 home_chat_message_" +
           (user?.id == data.user.id ? "user" : "friend")}>
           {data.message.messageFiles.length > 0 && 
