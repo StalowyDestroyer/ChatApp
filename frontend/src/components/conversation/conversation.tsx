@@ -2,19 +2,22 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import "./conversation.css";
 import {
   faCircleXmark,
+  faCrown,
   faEllipsis,
-  faMagnifyingGlass,
   faPaperclip,
+  faTrashCan,
 } from "@fortawesome/free-solid-svg-icons";
 import { Conversation_message_component } from "../conversation_message_component/Conversation_message_component";
 import { useEffect, useRef, useState } from "react";
 import { useAuthenticatedQuery } from "../../utils/useAuthQuery/useQueryHook";
 import {
+  deleteConversation,
   getConversationById,
   getMessages,
   getUsersForInvitation,
   getUsersInConversation,
   inviteToConversation,
+  removeUserFromConversation,
 } from "../../services/conversationService";
 import { useSocket } from "../../utils/socketContext/useSocket";
 import { ReciveMessageData, UserData, MessageFilePreview } from "../../types/types";
@@ -31,17 +34,17 @@ import {
   setIdForRequest,
 } from "../../pages/home/subsections/conversations/conversationUtils";
 import { FilePreview } from "../file_preview/file_preview";
+import { queryClient } from "../../configs/queryClient";
 
 interface props {
   id: string;
+  setCurrentConversation: React.Dispatch<React.SetStateAction<string | null>>;
 }
 
-export const Conversation: React.FC<props> = ({ id }) => {
+export const Conversation: React.FC<props> = ({ id, setCurrentConversation }) => {
   const { emitEvent, onEvent } = useSocket();
   const { user } = useAuthContext();
   const [messageText, setMessageText] = useState("");
-  const [searchString, setSearchString] = useState<string>("");
-  const [messageSearchActive, setMessageSearchActive] =
     useState<boolean>(false);
   const [sidePanelOpen, setSidePanelOpen] = useState<boolean>(false);
   const [messages, setMessages] = useState<ReciveMessageData[]>([]);
@@ -84,6 +87,15 @@ export const Conversation: React.FC<props> = ({ id }) => {
       enabled: canRefetchMessages,
     }
   );
+
+  const { mutateAsync: deleteConversationClick } = useMutation(
+    async () => await deleteConversation(id),
+    {onSuccess: () => {
+      setCurrentConversation(null);
+      queryClient.invalidateQueries("userConversations");
+      emitEvent("delete-chat", id);
+    }}
+  )
 
   //Wywołuje pobieranie wiadomości jeżeli jesteśmy na górze
   useEffect(() => {
@@ -137,6 +149,13 @@ export const Conversation: React.FC<props> = ({ id }) => {
     {
       onSuccess: () => setInvitationFilter(""),
     }
+  );
+
+  const { mutateAsync: removeUserFromConversationClick } = useMutation(
+    async (userID: number) => await removeUserFromConversation(id, userID), 
+    {onSuccess: () => {
+      //event
+    }}
   );
 
   async function submitInvite(e: React.FormEvent<HTMLFormElement>) {
@@ -222,23 +241,6 @@ export const Conversation: React.FC<props> = ({ id }) => {
         </div>
         {/* Button container */}
         <div className="d-flex align-items-center justify-content-end gap-4">
-          <div className="d-flex home_label home_label_FS">
-            <button className="conversation_button">
-              <FontAwesomeIcon
-                icon={faMagnifyingGlass}
-                className="fs-white home_icon"
-                onClick={() => setMessageSearchActive(!messageSearchActive)}
-              />
-            </button>
-            <input
-              className={
-                "form-control message_search_input " +
-                (messageSearchActive ? "" : "message_search_input_hidden")
-              }
-              value={searchString}
-              onChange={(e) => setSearchString(e.target.value)}
-            />
-          </div>
           <div className="d-flex home_label home_label_FS">
             <button
               className="conversation_button"
@@ -354,92 +356,129 @@ export const Conversation: React.FC<props> = ({ id }) => {
                       <h5>{member?.username}</h5>
                       <h6>{member?.email}</h6>
                     </div>
+                    <div className="d-flex align-items-center">
+                      {member.id != conversationInfo.ownerID ?
+                      <button type="button" className="text-danger bg-transparent fs-2 member_delete_button"
+                        onClick={() => {
+                          modal.openModal({
+                            title: "Usuwanie uczestnika konwersacji",
+                            content: "Czy napewno chcesz usunąć uczestnika <b>" + member.username + "</b>?",
+                            buttons: [
+                              buildButton("btn btn-primary", "Anuluj"),
+                              buildButton("btn btn-danger", "Potwierdź", async () => 
+                                await removeUserFromConversationClick(member.id)
+                              )
+                            ]
+                          })
+                        }}>
+                        <FontAwesomeIcon icon={faTrashCan}/>
+                      </button> :
+                      <FontAwesomeIcon icon={faCrown} className="text-warning fs-1"/>}
+                    </div>
                   </div>
                 ))}
               </div>
             </div>
-            <hr />
-            <h4 className="m-0">Dodaj osoby</h4>
-            <div className="new_member w-100 p-4">
-              <form
-                className="w-100 d-flex flex-column align-items-end invitation_form"
-                onSubmit={(e) => submitInvite(e)}
-              >
-                <div className="rounded bg-light overflow-hidden w-100">
-                  {!userToInvite ? (
-                    <input
-                      type="text"
-                      className="w-100 form-control border-secondary"
-                      onChange={(e) =>
-                        inviteFilterChange(
-                          e,
-                          setInvitationFilter,
-                          usersForInvitationRefetch
-                        )
-                      }
-                      value={invitationFilter}
-                    />
-                  ) : (
-                    <div
-                      className="d-flex align-items-center justify-content-center border border-secondary rounded position-relative gap-2"
-                      key={userToInvite.id}
-                    >
-                      <img
-                        src={userToInvite.profilePicturePath || keks}
-                        style={{
-                          width: "40px",
-                          height: "40px",
-                          borderRadius: "50%",
-                          objectFit: "cover",
-                          backgroundColor: "gray",
-                        }}
+            {user?.id == conversationInfo.ownerID &&
+            <>
+              <hr />
+              <h4 className="m-0">Dodaj osoby</h4>
+              <div className="new_member w-100 p-4">
+                <form
+                  className="w-100 d-flex flex-column align-items-end invitation_form"
+                  onSubmit={(e) => submitInvite(e)}
+                >
+                  <div className="rounded bg-light overflow-hidden w-100">
+                    {!userToInvite ? (
+                      <input
+                        type="text"
+                        className="w-100 form-control border-secondary"
+                        onChange={(e) =>
+                          inviteFilterChange(
+                            e,
+                            setInvitationFilter,
+                            usersForInvitationRefetch
+                          )
+                        }
+                        value={invitationFilter}
                       />
-                      <div>
-                        <p className="p-0 m-0">{userToInvite.username}</p>
-                        <label>{userToInvite.email}</label>
-                      </div>
-                      <button
-                        className="member_to_invite_cancel position-absolute"
-                        onClick={() => setUserToInvite(undefined)}
+                    ) : (
+                      <div
+                        className="d-flex align-items-center justify-content-center border border-secondary rounded position-relative gap-2"
+                        key={userToInvite.id}
                       >
-                        <FontAwesomeIcon
-                          icon={faCircleXmark}
-                          className="fs-white home_icon"
+                        <img
+                          src={userToInvite.profilePicturePath || keks}
+                          style={{
+                            width: "40px",
+                            height: "40px",
+                            borderRadius: "50%",
+                            objectFit: "cover",
+                            backgroundColor: "gray",
+                          }}
                         />
-                      </button>
-                    </div>
-                  )}
-                  <div
-                    className={
-                      "new_member_container" +
-                      (usersForInvitation &&
-                      usersForInvitation?.length > 0 &&
-                      invitationFilter.length > 0 &&
-                      !userToInvite
-                        ? " m-2"
-                        : "")
-                    }
-                  >
-                    {!userToInvite &&
-                      invitationFilter.length > 0 &&
-                      usersForInvitation?.map((user) => (
+                        <div>
+                          <p className="p-0 m-0">{userToInvite.username}</p>
+                          <label>{userToInvite.email}</label>
+                        </div>
                         <button
-                          type="button"
-                          key={user.id}
-                          className="new_member_selector rounded"
-                          onClick={() => setUserToInvite(user)}
+                          className="member_to_invite_cancel position-absolute"
+                          onClick={() => setUserToInvite(undefined)}
                         >
-                          <p className="p-0 m-0">{user.username}</p>
-                          <label>{user.email}</label>
+                          <FontAwesomeIcon
+                            icon={faCircleXmark}
+                            className="fs-white home_icon"
+                          />
                         </button>
-                      ))}
+                      </div>
+                    )}
+                    <div
+                      className={
+                        "new_member_container" +
+                        (usersForInvitation &&
+                        usersForInvitation?.length > 0 &&
+                        invitationFilter.length > 0 &&
+                        !userToInvite
+                          ? " m-2"
+                          : "")
+                      }
+                    >
+                      {!userToInvite &&
+                        invitationFilter.length > 0 &&
+                        usersForInvitation?.map((user) => (
+                          <button
+                            type="button"
+                            key={user.id}
+                            className="new_member_selector rounded"
+                            onClick={() => setUserToInvite(user)}
+                          >
+                            <p className="p-0 m-0">{user.username}</p>
+                            <label>{user.email}</label>
+                          </button>
+                        ))}
+                    </div>
                   </div>
-                </div>
-                <button type="submit" className="btn btn-primary m-2">
-                  Potwierdź
-                </button>
-              </form>
-            </div>
+                  <button type="submit" className="btn btn-primary m-2">
+                    Potwierdź
+                  </button>
+                </form>
+              </div>
+              <hr />
+              <button type="button" className="btn btn-danger m-2 d-flex align-items-center"
+                onClick={() => modal.openModal({
+                  title: "Usuwanie konwersacji",
+                  content: "Czy napewno chcesz usunąć konwersację <b>" + conversationInfo.name + "</b>?",
+                  buttons: [
+                    buildButton("btn btn-primary", "Anuluj"),
+                    buildButton("btn btn-danger", "Potwierdź", async () => {
+                      await deleteConversationClick();
+                    })
+                  ]
+                })}>
+                <p className="p-0 m-0">Usuń konwersację</p>
+                <FontAwesomeIcon icon={faTrashCan} className="ms-2"/>
+              </button>
+            </>}
           </div>
         </div>
       </div>

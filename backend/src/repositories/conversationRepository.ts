@@ -6,7 +6,6 @@ import { Message } from "../models/message";
 import { ConversationMessage } from "../models/conversationMessage";
 import { Op } from "sequelize";
 import { ConversationInvites } from "../models/conversationInvites";
-import chalk from "chalk";
 import { MessageFiles } from "../models/messageFiles";
 import path from "path"
 
@@ -17,6 +16,7 @@ export const createConversation = async (req: Request, res: Response) => {
       imagePath: req.file
         ? "http://localhost:3000/uploads/chat-avatar/" + req.file.filename
         : null,
+        ownerID: req.user?.id,
     });
     await ConversationMembers.create({
       userID: req.user?.id,
@@ -35,6 +35,7 @@ export const getUserConversations = async (req: Request, res: Response) => {
       include: [
         {
           model: User.scope("safeData"),
+          as: "members",
           where: { id: req.user?.id },
           attributes: [],
         },
@@ -210,7 +211,6 @@ export const checkIsUserInChat = async (req: Request, res: Response) => {
   }
 };
 
-
 export const downloadFile = async (req: Request, res: Response) => {
   try {
     const file = await MessageFiles.findByPk(Number(req.params.id));
@@ -231,3 +231,33 @@ export const downloadFile = async (req: Request, res: Response) => {
     res.status(500).json({ error: "Internal Server Error" });
   }
 }
+
+export const deleteConversation = async (req: Request, res: Response) => {
+  try {
+    const conversation = await Conversation.findByPk(req.params.id);
+    if(req.user?.id == conversation?.ownerID) {
+      await Conversation.destroy({where: {id: req.params.id}});
+      res.sendStatus(200);
+      return;
+    }
+    res.sendStatus(403);
+  } catch (error) {
+    console.error("Error fetching conversation with messages:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+}
+
+export const removeUserFromConversation = async (req: Request, res: Response) => {
+  try {
+    const conversation = await Conversation.findByPk(req.params.id);
+    if(req.user?.id == conversation?.ownerID) {
+      await ConversationMembers.destroy({where: {userID: req.query.userID, conversationID: conversation?.id}});
+      res.sendStatus(200);
+      return;
+    }
+    res.sendStatus(403);
+  } catch (error) {
+    console.error("Error fetching conversation with messages:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+} 

@@ -77,6 +77,7 @@ export const Conversations: React.FC<props> = ({
       </div>
       {currentConversation && (
         <ConversationComponent
+          setCurrentConversation={setCurrentConversation}
           id={currentConversation}
           key={currentConversation}
         />

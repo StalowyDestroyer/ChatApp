@@ -98,6 +98,15 @@ export const socketConfig = (app: Application) => {
       console.log(SocketMap.get(socket.id));
     });
 
+    socket.on("delete-chat", (chatID: string) => {
+      SocketMap.forEach((values, key) => {
+        if (values.includes(chatID)) {
+          socket.to(key).emit("chat-deleted", chatID);
+          SocketMap.delete(key);
+        }
+      });
+    });
+
     socket.on("disconnect", () => {
       console.log(chalk.bgRed(`User disconnected: ${socket.id} ` + " ❌ "));
       SocketMap.delete(socket.id);

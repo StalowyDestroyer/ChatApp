@@ -7,6 +7,8 @@ import {
   Default,
   HasMany,
   BelongsToMany,
+  ForeignKey,
+  BelongsTo,
 } from "sequelize-typescript";
 import { ConversationMessage } from "./conversationMessage";
 import { Message } from "./message";
@@ -38,6 +40,13 @@ export class Conversation extends Model {
   })
   imagePath!: string;
 
+  @ForeignKey(() => User)
+  @Column({
+    type: DataType.INTEGER,
+    allowNull: false,
+  })
+  ownerID!: number;
+
   @HasMany(() => ConversationMessage)
   conversationMessages!: ConversationMessage[];
 
@@ -45,8 +54,11 @@ export class Conversation extends Model {
   messages!: Message[];
 
   @BelongsToMany(() => User, () => ConversationMembers)
-  users!: User[];
+  members!: User[];
 
   @HasMany(() => ConversationMembers)
   conversationMembers!: ConversationMembers[];
+
+  @BelongsTo(() => User)
+  owner!: User;
 }
