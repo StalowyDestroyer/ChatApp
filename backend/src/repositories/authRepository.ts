@@ -28,6 +28,7 @@ export const login = async (req: Request, res: Response) => {
       res.sendStatus(400);
       return;
     }
+
     const { email, password } = req.body;
     const user = await User.findOne({ where: { email: email } });
 

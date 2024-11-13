@@ -17,7 +17,11 @@ import {
   inviteToConversation,
 } from "../../services/conversationService";
 import { useSocket } from "../../utils/socketContext/useSocket";
-import { ReciveMessageData, UserData, MessageFilePreview } from "../../types/types";
+import {
+  ReciveMessageData,
+  UserData,
+  MessageFilePreview,
+} from "../../types/types";
 import { useAuthContext } from "../../utils/authContext/useAuth";
 import keks from "../../assets/react.svg";
 import { useMutation, useQuery } from "react-query";
@@ -26,6 +30,7 @@ import { buildButton } from "../modal/Utils";
 import {
   fileInputChange,
   inviteFilterChange,
+  isAtBottom,
   loadMessagesAndSetScroll,
   scrollToBottom as scrollBottom,
   setIdForRequest,
@@ -112,8 +117,8 @@ export const Conversation: React.FC<props> = ({ id }) => {
   useEffect(() => {
     const removeListener = onEvent("message", (data: ReciveMessageData) => {
       setMessages((prev) => [...prev, data]);
-      
-      if (data.user.id == user!.id) {
+
+      if (data.user.id == user!.id || isAtBottom(messageContainer)) {
         scrollBottom(messageContainer);
       }
     });
@@ -158,7 +163,7 @@ export const Conversation: React.FC<props> = ({ id }) => {
   function sendMessage(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
 
-    if(messageText.length > 0 || files.length > 0) {
+    if (messageText.length > 0 || files.length > 0) {
       emitEvent("message", {
         roomID: id,
         userID: user?.id,
@@ -180,11 +185,23 @@ export const Conversation: React.FC<props> = ({ id }) => {
       if (differenceInDays > 1) {
         return (
           <p className="text-white">
-            {date1.toLocaleDateString() + " " + date1.toLocaleTimeString("pl-PL", {hour: "2-digit", minute: "2-digit"})}
+            {date1.toLocaleDateString() +
+              " " +
+              date1.toLocaleTimeString("pl-PL", {
+                hour: "2-digit",
+                minute: "2-digit",
+              })}
           </p>
         );
       }
-      return <p className="text-white">{date1.toLocaleTimeString("pl-PL", {hour: "2-digit", minute: "2-digit"})}</p>;
+      return (
+        <p className="text-white">
+          {date1.toLocaleTimeString("pl-PL", {
+            hour: "2-digit",
+            minute: "2-digit",
+          })}
+        </p>
+      );
     }
     const date2 = new Date(dateString2);
     const differenceInMs = Math.abs(date1.getTime() - date2.getTime());
@@ -193,11 +210,23 @@ export const Conversation: React.FC<props> = ({ id }) => {
       if (differenceInDays > 1) {
         return (
           <p className="text-white">
-            {date1.toLocaleDateString() + " " + date1.toLocaleTimeString("pl-PL", {hour: "2-digit", minute: "2-digit"})}
+            {date1.toLocaleDateString() +
+              " " +
+              date1.toLocaleTimeString("pl-PL", {
+                hour: "2-digit",
+                minute: "2-digit",
+              })}
           </p>
         );
       }
-      return <p className="text-white">{date1.toLocaleTimeString("pl-PL", {hour: "2-digit", minute: "2-digit"})}</p>;
+      return (
+        <p className="text-white">
+          {date1.toLocaleTimeString("pl-PL", {
+            hour: "2-digit",
+            minute: "2-digit",
+          })}
+        </p>
+      );
     }
   }
 
@@ -300,7 +329,10 @@ export const Conversation: React.FC<props> = ({ id }) => {
                   type="file"
                   ref={fileInput}
                   multiple
-                  onChange={(e) => {fileInputChange(e, setFiles); if(fileInput.current) fileInput.current.value = ""}}
+                  onChange={(e) => {
+                    fileInputChange(e, setFiles);
+                    if (fileInput.current) fileInput.current.value = "";
+                  }}
                   id="home_message_files"
                   className="d-none"
                 />
