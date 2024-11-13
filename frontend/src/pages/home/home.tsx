@@ -56,25 +56,37 @@ export const Home = () => {
     }
   );
 
-  const { data: conversations, refetch: conversationRefetch } = useAuthenticatedQuery(
-    "userConversations",
-    async () => await getAllUserConversations(),
-    {
-      onSuccess: (res) => {
-        if (!currentConversation && res!.length > 0)
-          setCurrentConversation(res![0].id);
-      },
-    }
-  );
+  const { data: conversations, refetch: conversationRefetch } =
+    useAuthenticatedQuery(
+      "userConversations",
+      async () => await getAllUserConversations(),
+      {
+        onSuccess: (res) => {
+          if (!currentConversation && res!.length > 0)
+            setCurrentConversation(res![0].id);
+        },
+      }
+    );
 
   useEffect(() => {
-    const event = onEvent("chat-deleted", () => {
-      conversationRefetch();
+    const event = onEvent("chat-deleted", async () => {
+      await conversationRefetch();
       setCurrentConversation(null);
     });
     return event;
-  }, [conversationRefetch, onEvent])
+  }, [conversationRefetch, onEvent]);
 
+  useEffect(() => {
+    const event = onEvent("deleted", async (conversationID: string) => {
+      console.log("usunieto");
+
+      if (currentConversation == conversationID) {
+        setCurrentConversation(null);
+      }
+      await conversationRefetch();
+    });
+    return event;
+  }, [onEvent, conversationRefetch, currentConversation]);
 
   return (
     <div className="home_main_container text-center d-flex flex-column py-3 pe-3">

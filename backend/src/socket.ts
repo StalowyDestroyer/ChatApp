@@ -23,7 +23,12 @@ export const socketConfig = (app: Application) => {
     },
   });
 
-  const SocketMap: Map<string, string[]> = new Map();
+  interface MapValues {
+    UserID: number;
+    Rooms: string[];
+  }
+
+  const SocketMap: Map<string, MapValues> = new Map();
 
   io.on("connection", (socket: Socket) => {
     console.log(chalk.bgGreen("User connected: " + socket.id + " ✔ "));
@@ -71,7 +76,7 @@ export const socketConfig = (app: Application) => {
         const notify: string[] = [];
 
         SocketMap.forEach((values, key) => {
-          if (values.includes(message.roomID)) notify.push(key);
+          if (values.Rooms.includes(message.roomID)) notify.push(key);
         });
 
         notify.forEach((z) =>
@@ -93,18 +98,32 @@ export const socketConfig = (app: Application) => {
       socket.join(channelID);
     });
 
-    socket.on("index-chats", (data: string[]) => {
-      SocketMap.set(socket.id, data);
-      console.log(SocketMap.get(socket.id));
-    });
+    socket.on(
+      "delete-user",
+      (data: { conversationID: string; deletedUserID: number }) => {
+        SocketMap.forEach((value, key) => {
+          if (value.UserID == data.deletedUserID) {
+            SocketMap.set(key, {
+              UserID: value.UserID,
+              Rooms: value.Rooms.filter((z) => z != data.conversationID),
+            });
+            socket.to(key).emit("deleted", data.conversationID);
+          } else {
+            // console.log(chalk.bgYellow(JSON.stringify(SocketMap.get(key))));
+            // console.log(chalk.bgYellow(JSON.stringify(key)));
+            // socket.to(value.Rooms[0]).emit("dupa", data.conversationID);
+            //TODO
+          }
+        });
+      }
+    );
 
-    socket.on("delete-chat", (chatID: string) => {
-      SocketMap.forEach((values, key) => {
-        if (values.includes(chatID)) {
-          socket.to(key).emit("chat-deleted", chatID);
-          SocketMap.delete(key);
-        }
+    socket.on("index-chats", (data: { rooms: string[]; userID: number }) => {
+      SocketMap.set(socket.id, {
+        UserID: data.userID,
+        Rooms: data.rooms,
       });
+      // console.log(SocketMap.get(socket.id));
     });
 
     socket.on("disconnect", () => {
