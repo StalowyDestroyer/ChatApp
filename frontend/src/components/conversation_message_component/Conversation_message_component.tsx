@@ -38,6 +38,7 @@ export const Conversation_message_component: React.FC<props> = ({ data }) => {
           (user?.id == data.user.id ? "user" : "friend")
         }
       >
+        {user?.id == data.user.id &&
         <div className="delete_button_container">
           <button
             onClick={() => modal.openModal({
@@ -52,7 +53,7 @@ export const Conversation_message_component: React.FC<props> = ({ data }) => {
           })}>
             <FontAwesomeIcon className="fs-3 text-white" icon={faTrashCan} />
           </button>
-        </div>
+        </div>}
         <div className={"d-flex flex-column gap-2 home_chat_message_" +
           (user?.id == data.user.id ? "user" : "friend")}>
           {data.message.messageFiles.length > 0 && 
