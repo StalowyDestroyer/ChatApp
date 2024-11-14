@@ -11,6 +11,7 @@ import { Application } from "express";
 import fs from "fs";
 import path from "path";
 import { MessageFiles } from "./models/messageFiles";
+import { Json } from "sequelize/types/utils";
 
 export const socketConfig = (app: Application) => {
   const server = http.createServer(app);
@@ -23,7 +24,12 @@ export const socketConfig = (app: Application) => {
     },
   });
 
-  const SocketMap: Map<string, string[]> = new Map();
+  interface MapValues {
+    UserID: number;
+    Rooms: string[];
+  }
+
+  const SocketMap: Map<string, MapValues> = new Map();
 
   io.on("connection", (socket: Socket) => {
     console.log(chalk.bgGreen("User connected: " + socket.id + " ✔ "));
@@ -71,7 +77,7 @@ export const socketConfig = (app: Application) => {
         const notify: string[] = [];
 
         SocketMap.forEach((values, key) => {
-          if (values.includes(message.roomID)) notify.push(key);
+          if (values.Rooms.includes(message.roomID)) notify.push(key);
         });
 
         notify.forEach((z) =>
@@ -93,9 +99,62 @@ export const socketConfig = (app: Application) => {
       socket.join(channelID);
     });
 
-    socket.on("index-chats", (data: string[]) => {
-      SocketMap.set(socket.id, data);
-      console.log(SocketMap.get(socket.id));
+    socket.on(
+      "delete-user",
+      (data: { conversationID: string; deletedUserID: number }) => {
+        // let ToDElete = null;
+        // SocketMap.forEach((value, key) => {
+        //   if (value.UserID === data.deletedUserID) ToDElete = key;
+        // });
+
+        // if (ToDElete) {
+        //   io.to(ToDElete).emit("deleted", data.conversationID);
+        //   socket.to(ToDElete).socketsLeave(data.conversationID);
+        // }
+
+        // const notify: string[] = [];
+
+        // SocketMap.forEach((values, key) => {
+        //   if (values.Rooms.includes(data.conversationID)) notify.push(key);
+        // });
+
+        // notify.forEach((z) =>
+        //   io.to(z).emit("refresh-members", data.conversationID)
+        // );
+
+        SocketMap.forEach((values, key) => {
+          if (values.Rooms.includes(data.conversationID)) {
+            if (data.deletedUserID == values.UserID) {
+              io.to(key).emit("deleted", data.conversationID);
+              socket.to(key).socketsLeave(data.conversationID);
+            } else {
+              console.log(chalk.red("robi sie"));
+
+              io.to(key).emit("refresh-members", data.conversationID);
+            }
+          }
+        });
+      }
+    );
+
+    socket.on(
+      "message-delete",
+      (data: { messageID: number; conversationID: string }) => {
+        SocketMap.forEach((value, key) => {
+          if (value.Rooms.includes(data.conversationID)) {
+            io.in(key).emit("remove-message", data.messageID);
+            // console.log(chalk.red(JSON.stringify(data)));
+          }
+        });
+      }
+    );
+
+    socket.on("index-chats", (data: { rooms: string[]; userID: number }) => {
+      SocketMap.set(socket.id, {
+        UserID: data.userID,
+        Rooms: data.rooms,
+      });
+      // console.log(SocketMap.get(socket.id));
     });
 
     socket.on("disconnect", () => {
