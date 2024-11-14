@@ -77,12 +77,14 @@ export const Conversation_message_component: React.FC<props> = ({
             </button>
           </div>
         )}
+        
         <div
           className={
             "d-flex flex-column gap-2 home_chat_message_" +
             (user?.id == data.user.id ? "user" : "friend")
           }
         >
+          <p className="home_label m-0">{data.user.username}</p>
           {data.message.messageFiles.length > 0 && (
             <div className="d-flex flex-column gap-2">
               {data.message.messageFiles.map((file) =>
@@ -111,7 +113,7 @@ export const Conversation_message_component: React.FC<props> = ({
             </div>
           )}
           {data.message.content.length > 0 && (
-            <div className="home_chat_message_text">
+            <div className={"home_chat_message_text home_chat_message_" + (user?.id == data.user.id ? "user" : "friend")}>
               <p className="home_label m-0 p-0">{data.message.content}</p>
             </div>
           )}
