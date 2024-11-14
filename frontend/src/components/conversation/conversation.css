@@ -143,6 +143,7 @@ hr{
     padding: 0;
     line-height: 25px;
 }
+
 .member_delete_button{
     outline: none;
     border: 2px solid #5c5d61;
@@ -151,3 +152,4 @@ hr{
     height: 55px;
     align-self: end;
 }
+
