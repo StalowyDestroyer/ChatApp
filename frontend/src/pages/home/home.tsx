@@ -23,12 +23,16 @@ import {
 } from "../../services/conversationService";
 import { useEffect, useState } from "react";
 
+import { useSocket } from "../../utils/socketContext/useSocket";
+
 export const Home = () => {
   const { logout } = useAuthContext();
   const [currentConversation, setCurrentConversation] = useState<string | null>(
     null
   );
+
   const [conversationFilter, setConversationFilter] = useState<string>("");
+  const { onEvent } = useSocket();
 
   useAuthenticatedQuery(
     "isUserInChat",
@@ -55,20 +59,41 @@ export const Home = () => {
     }
   );
 
-  const { data: conversations, refetch: conversationRefetch } = useAuthenticatedQuery(
-    "userConversations",
-    async () => await getAllUserConversations(conversationFilter),
-    {
-      onSuccess: (res) => {
-        if (!currentConversation && res!.length > 0)
-          setCurrentConversation(res![0].id);
-      },
-    }
-  );
-  
+  const { data: conversations, refetch: conversationRefetch } =
+    useAuthenticatedQuery(
+      "userConversations",
+      async () => await getAllUserConversations(conversationFilter),
+      {
+        onSuccess: (res) => {
+          if (!currentConversation && res!.length > 0)
+            setCurrentConversation(res![0].id);
+        },
+      }
+    );
+
   useEffect(() => {
     conversationRefetch();
-  }, [conversationFilter, conversationRefetch])
+  }, [conversationFilter, conversationRefetch]);
+
+  useEffect(() => {
+    const event = onEvent("chat-deleted", async () => {
+      await conversationRefetch();
+      setCurrentConversation(null);
+    });
+    return event;
+  }, [conversationRefetch, onEvent]);
+
+  useEffect(() => {
+    const event = onEvent("deleted", async (conversationID: string) => {
+      console.log("usunieto");
+
+      if (currentConversation == conversationID) {
+        setCurrentConversation(null);
+      }
+      await conversationRefetch();
+    });
+    return event;
+  }, [onEvent, conversationRefetch, currentConversation]);
 
   return (
     <div className="home_main_container text-center d-flex flex-column py-3 pe-3">

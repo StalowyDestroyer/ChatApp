@@ -2,10 +2,12 @@ import { Friends_list_component } from "../../../../components/friend_list_compo
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faMagnifyingGlass } from "@fortawesome/free-solid-svg-icons";
 import "./conversations.css";
-import { Conversation as ConversationComponent } from "../../../../components/conversation/conversation";
+import { ConversationComponent as ConversationComponent } from "../../../../components/conversation/conversation";
 import { useEffect } from "react";
 import { useSocket } from "../../../../utils/socketContext/useSocket";
 import { Conversation, SocketMessagePayload } from "../../../../types/types";
+
+import { useAuthContext } from "../../../../utils/authContext/useAuth";
 
 interface props {
   conversations: Conversation[] | undefined;
@@ -23,7 +25,7 @@ export const Conversations: React.FC<props> = ({
   setConversationFilter,
 }) => {
   const { emitEvent, onEvent } = useSocket();
-
+  const { user } = useAuthContext();
   useEffect(() => {
     const offNotificationEvent = onEvent(
       "notification",
@@ -46,10 +48,10 @@ export const Conversations: React.FC<props> = ({
 
   useEffect(() => {
     if (conversations && conversations.length > 0) {
-      emitEvent(
-        "index-chats",
-        conversations.map((z) => z.id)
-      );
+      emitEvent("index-chats", {
+        rooms: conversations.map((z) => z.id),
+        userID: user?.id,
+      });
       console.log("index");
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -62,8 +64,16 @@ export const Conversations: React.FC<props> = ({
         <div className="home_searchbar_container">
           <div className="home_searchbar gap-2">
             {/* Searchbar */}
-            <FontAwesomeIcon icon={faMagnifyingGlass} className="home_icon ms-3" />
-            <input type="text" placeholder="Wyszukaj konwersacje" value={conversationFilter} onChange={(e) => setConversationFilter(e.target.value)}/>
+            <FontAwesomeIcon
+              icon={faMagnifyingGlass}
+              className="home_icon ms-3"
+            />
+            <input
+              type="text"
+              placeholder="Wyszukaj konwersacje"
+              value={conversationFilter}
+              onChange={(e) => setConversationFilter(e.target.value)}
+            />
           </div>
         </div>
         <div className="home_friend_list gap-2 d-flex flex-column">
@@ -78,8 +88,10 @@ export const Conversations: React.FC<props> = ({
       </div>
       {currentConversation && (
         <ConversationComponent
+          setCurrentConversation={setCurrentConversation}
           id={currentConversation}
           key={currentConversation}
+          conversations={conversations}
         />
       )}
     </>

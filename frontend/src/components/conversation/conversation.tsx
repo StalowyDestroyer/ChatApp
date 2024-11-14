@@ -2,22 +2,30 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import "./conversation.css";
 import {
   faCircleXmark,
+  faCrown,
   faEllipsis,
-  faMagnifyingGlass,
   faPaperclip,
+  faTrashCan,
 } from "@fortawesome/free-solid-svg-icons";
 import { Conversation_message_component } from "../conversation_message_component/Conversation_message_component";
 import { useEffect, useRef, useState } from "react";
 import { useAuthenticatedQuery } from "../../utils/useAuthQuery/useQueryHook";
 import {
+  deleteConversation,
   getConversationById,
   getMessages,
   getUsersForInvitation,
   getUsersInConversation,
   inviteToConversation,
+  removeUserFromConversation,
 } from "../../services/conversationService";
 import { useSocket } from "../../utils/socketContext/useSocket";
-import { ReciveMessageData, UserData, MessageFilePreview } from "../../types/types";
+import {
+  ReciveMessageData,
+  UserData,
+  MessageFilePreview,
+  Conversation,
+} from "../../types/types";
 import { useAuthContext } from "../../utils/authContext/useAuth";
 import keks from "../../assets/react.svg";
 import { useMutation, useQuery } from "react-query";
@@ -26,23 +34,29 @@ import { buildButton } from "../modal/Utils";
 import {
   fileInputChange,
   inviteFilterChange,
+  isAtBottom,
   loadMessagesAndSetScroll,
   scrollToBottom as scrollBottom,
   setIdForRequest,
 } from "../../pages/home/subsections/conversations/conversationUtils";
 import { FilePreview } from "../file_preview/file_preview";
+import { queryClient } from "../../configs/queryClient";
 
 interface props {
   id: string;
+  setCurrentConversation: React.Dispatch<React.SetStateAction<string | null>>;
+  conversations: Conversation[] | undefined;
 }
 
-export const Conversation: React.FC<props> = ({ id }) => {
+export const ConversationComponent: React.FC<props> = ({
+  id,
+  conversations,
+  setCurrentConversation,
+}) => {
   const { emitEvent, onEvent } = useSocket();
   const { user } = useAuthContext();
   const [messageText, setMessageText] = useState("");
-  const [searchString, setSearchString] = useState<string>("");
-  const [messageSearchActive, setMessageSearchActive] =
-    useState<boolean>(false);
+  useState<boolean>(false);
   const [sidePanelOpen, setSidePanelOpen] = useState<boolean>(false);
   const [messages, setMessages] = useState<ReciveMessageData[]>([]);
   const [invitationFilter, setInvitationFilter] = useState<string>("");
@@ -63,7 +77,7 @@ export const Conversation: React.FC<props> = ({ id }) => {
   );
 
   //Pobiera użytkowników konwersacji
-  const { data: members } = useAuthenticatedQuery(
+  const { data: members, refetch: refetchMembers } = useAuthenticatedQuery(
     ["conversationMembers", id],
     async () => await getUsersInConversation(id)
   );
@@ -82,6 +96,17 @@ export const Conversation: React.FC<props> = ({ id }) => {
         );
       },
       enabled: canRefetchMessages,
+    }
+  );
+
+  const { mutateAsync: deleteConversationClick } = useMutation(
+    async () => await deleteConversation(id),
+    {
+      onSuccess: () => {
+        setCurrentConversation(null);
+        queryClient.invalidateQueries("userConversations");
+        emitEvent("delete-chat", id);
+      },
     }
   );
 
@@ -108,18 +133,37 @@ export const Conversation: React.FC<props> = ({ id }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [canRefetchMessages, refetch, messageContainer.current]);
 
+  useEffect(() => {
+    const event = onEvent("refresh-members", async (conversationID: string) => {
+      if (conversationID == id) {
+        await refetchMembers();
+      }
+    });
+    return event;
+  }, [onEvent, id, refetchMembers]);
+  //ToDO
+
   //Odpieranie wiadomości z socketów
   useEffect(() => {
     const removeListener = onEvent("message", (data: ReciveMessageData) => {
       setMessages((prev) => [...prev, data]);
-      
-      if (data.user.id == user!.id) {
+
+      if (data.user.id == user!.id || isAtBottom(messageContainer)) {
         scrollBottom(messageContainer);
       }
     });
 
     return removeListener;
   }, [onEvent, id, user]);
+
+  useEffect(() => {
+    emitEvent("index-chats", {
+      rooms: conversations?.map((z) => z.id),
+      userID: user?.id,
+    });
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id]);
 
   //Filtrowanie użytkowników do zaproszeń
   const { data: usersForInvitation, refetch: usersForInvitationRefetch } =
@@ -136,6 +180,15 @@ export const Conversation: React.FC<props> = ({ id }) => {
     async () => await inviteToConversation(id, userToInvite!.id),
     {
       onSuccess: () => setInvitationFilter(""),
+    }
+  );
+
+  const { mutateAsync: removeUserFromConversationClick } = useMutation(
+    async (userID: number) => await removeUserFromConversation(id, userID),
+    {
+      onSuccess: (res) => {
+        emitEvent("delete-user", { conversationID: id, deletedUserID: res.id });
+      },
     }
   );
 
@@ -158,7 +211,7 @@ export const Conversation: React.FC<props> = ({ id }) => {
   function sendMessage(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
 
-    if(messageText.length > 0 || files.length > 0) {
+    if (messageText.length > 0 || files.length > 0) {
       emitEvent("message", {
         roomID: id,
         userID: user?.id,
@@ -172,6 +225,13 @@ export const Conversation: React.FC<props> = ({ id }) => {
     }
   }
 
+  useEffect(() => {
+    const event = onEvent("remove-message", (id: number) => {
+      setMessages((prev) => prev.filter((z) => z.message.id != id));
+    });
+    return event;
+  }, [onEvent]);
+
   function compareDates(dateString1: string, dateString2: string | null) {
     const date1 = new Date(dateString1);
     const differenceInDays =
@@ -180,11 +240,23 @@ export const Conversation: React.FC<props> = ({ id }) => {
       if (differenceInDays > 1) {
         return (
           <p className="text-white">
-            {date1.toLocaleDateString() + " " + date1.toLocaleTimeString("pl-PL", {hour: "2-digit", minute: "2-digit"})}
+            {date1.toLocaleDateString() +
+              " " +
+              date1.toLocaleTimeString("pl-PL", {
+                hour: "2-digit",
+                minute: "2-digit",
+              })}
           </p>
         );
       }
-      return <p className="text-white">{date1.toLocaleTimeString("pl-PL", {hour: "2-digit", minute: "2-digit"})}</p>;
+      return (
+        <p className="text-white">
+          {date1.toLocaleTimeString("pl-PL", {
+            hour: "2-digit",
+            minute: "2-digit",
+          })}
+        </p>
+      );
     }
     const date2 = new Date(dateString2);
     const differenceInMs = Math.abs(date1.getTime() - date2.getTime());
@@ -193,11 +265,23 @@ export const Conversation: React.FC<props> = ({ id }) => {
       if (differenceInDays > 1) {
         return (
           <p className="text-white">
-            {date1.toLocaleDateString() + " " + date1.toLocaleTimeString("pl-PL", {hour: "2-digit", minute: "2-digit"})}
+            {date1.toLocaleDateString() +
+              " " +
+              date1.toLocaleTimeString("pl-PL", {
+                hour: "2-digit",
+                minute: "2-digit",
+              })}
           </p>
         );
       }
-      return <p className="text-white">{date1.toLocaleTimeString("pl-PL", {hour: "2-digit", minute: "2-digit"})}</p>;
+      return (
+        <p className="text-white">
+          {date1.toLocaleTimeString("pl-PL", {
+            hour: "2-digit",
+            minute: "2-digit",
+          })}
+        </p>
+      );
     }
   }
 
@@ -222,23 +306,6 @@ export const Conversation: React.FC<props> = ({ id }) => {
         </div>
         {/* Button container */}
         <div className="d-flex align-items-center justify-content-end gap-4">
-          <div className="d-flex home_label home_label_FS">
-            <button className="conversation_button">
-              <FontAwesomeIcon
-                icon={faMagnifyingGlass}
-                className="fs-white home_icon"
-                onClick={() => setMessageSearchActive(!messageSearchActive)}
-              />
-            </button>
-            <input
-              className={
-                "form-control message_search_input " +
-                (messageSearchActive ? "" : "message_search_input_hidden")
-              }
-              value={searchString}
-              onChange={(e) => setSearchString(e.target.value)}
-            />
-          </div>
           <div className="d-flex home_label home_label_FS">
             <button
               className="conversation_button"
@@ -273,7 +340,10 @@ export const Conversation: React.FC<props> = ({ id }) => {
                         messages[i - 1].message.createdAt
                       )
                     : compareDates(element.message.createdAt, null)}
-                  <Conversation_message_component data={element} />
+                  <Conversation_message_component
+                    data={element}
+                    conversationID={id}
+                  />
                 </div>
               ))
             )}
@@ -300,7 +370,10 @@ export const Conversation: React.FC<props> = ({ id }) => {
                   type="file"
                   ref={fileInput}
                   multiple
-                  onChange={(e) => {fileInputChange(e, setFiles); if(fileInput.current) fileInput.current.value = ""}}
+                  onChange={(e) => {
+                    fileInputChange(e, setFiles);
+                    if (fileInput.current) fileInput.current.value = "";
+                  }}
                   id="home_message_files"
                   className="d-none"
                 />
@@ -354,92 +427,157 @@ export const Conversation: React.FC<props> = ({ id }) => {
                       <h5>{member?.username}</h5>
                       <h6>{member?.email}</h6>
                     </div>
+                    <div className="d-flex align-items-center">
+                      {member.id != conversationInfo.ownerID &&
+                      user?.id == conversationInfo.ownerID ? (
+                        <button
+                          type="button"
+                          className="text-danger bg-transparent fs-2 member_delete_button"
+                          onClick={() => {
+                            modal.openModal({
+                              title: "Usuwanie uczestnika konwersacji",
+                              content:
+                                "Czy napewno chcesz usunąć uczestnika <b>" +
+                                member.username +
+                                "</b>?",
+                              buttons: [
+                                buildButton("btn btn-primary", "Anuluj"),
+                                buildButton(
+                                  "btn btn-danger",
+                                  "Potwierdź",
+                                  async () =>
+                                    await removeUserFromConversationClick(
+                                      member.id
+                                    )
+                                ),
+                              ],
+                            });
+                          }}
+                        >
+                          <FontAwesomeIcon icon={faTrashCan} />
+                        </button>
+                      ) : member.id == conversationInfo.ownerID ? (
+                        <FontAwesomeIcon
+                          icon={faCrown}
+                          className="text-warning fs-1"
+                        />
+                      ) : (
+                        ""
+                      )}
+                    </div>
                   </div>
                 ))}
               </div>
             </div>
-            <hr />
-            <h4 className="m-0">Dodaj osoby</h4>
-            <div className="new_member w-100 p-4">
-              <form
-                className="w-100 d-flex flex-column align-items-end invitation_form"
-                onSubmit={(e) => submitInvite(e)}
-              >
-                <div className="rounded bg-light overflow-hidden w-100">
-                  {!userToInvite ? (
-                    <input
-                      type="text"
-                      className="w-100 form-control border-secondary"
-                      onChange={(e) =>
-                        inviteFilterChange(
-                          e,
-                          setInvitationFilter,
-                          usersForInvitationRefetch
-                        )
-                      }
-                      value={invitationFilter}
-                    />
-                  ) : (
-                    <div
-                      className="d-flex align-items-center justify-content-center border border-secondary rounded position-relative gap-2"
-                      key={userToInvite.id}
-                    >
-                      <img
-                        src={userToInvite.profilePicturePath || keks}
-                        style={{
-                          width: "40px",
-                          height: "40px",
-                          borderRadius: "50%",
-                          objectFit: "cover",
-                          backgroundColor: "gray",
-                        }}
-                      />
-                      <div>
-                        <p className="p-0 m-0">{userToInvite.username}</p>
-                        <label>{userToInvite.email}</label>
-                      </div>
-                      <button
-                        className="member_to_invite_cancel position-absolute"
-                        onClick={() => setUserToInvite(undefined)}
-                      >
-                        <FontAwesomeIcon
-                          icon={faCircleXmark}
-                          className="fs-white home_icon"
-                        />
-                      </button>
-                    </div>
-                  )}
-                  <div
-                    className={
-                      "new_member_container" +
-                      (usersForInvitation &&
-                      usersForInvitation?.length > 0 &&
-                      invitationFilter.length > 0 &&
-                      !userToInvite
-                        ? " m-2"
-                        : "")
-                    }
+            {user?.id == conversationInfo.ownerID && (
+              <>
+                <hr />
+                <h4 className="m-0">Dodaj osoby</h4>
+                <div className="new_member w-100 p-4">
+                  <form
+                    className="w-100 d-flex flex-column align-items-end invitation_form"
+                    onSubmit={(e) => submitInvite(e)}
                   >
-                    {!userToInvite &&
-                      invitationFilter.length > 0 &&
-                      usersForInvitation?.map((user) => (
-                        <button
-                          type="button"
-                          key={user.id}
-                          className="new_member_selector rounded"
-                          onClick={() => setUserToInvite(user)}
+                    <div className="rounded bg-light overflow-hidden w-100">
+                      {!userToInvite ? (
+                        <input
+                          type="text"
+                          className="w-100 form-control border-secondary"
+                          onChange={(e) =>
+                            inviteFilterChange(
+                              e,
+                              setInvitationFilter,
+                              usersForInvitationRefetch
+                            )
+                          }
+                          value={invitationFilter}
+                        />
+                      ) : (
+                        <div
+                          className="d-flex align-items-center justify-content-center border border-secondary rounded position-relative gap-2"
+                          key={userToInvite.id}
                         >
-                          <p className="p-0 m-0">{user.username}</p>
-                          <label>{user.email}</label>
-                        </button>
-                      ))}
-                  </div>
+                          <img
+                            src={userToInvite.profilePicturePath || keks}
+                            style={{
+                              width: "40px",
+                              height: "40px",
+                              borderRadius: "50%",
+                              objectFit: "cover",
+                              backgroundColor: "gray",
+                            }}
+                          />
+                          <div>
+                            <p className="p-0 m-0">{userToInvite.username}</p>
+                            <label>{userToInvite.email}</label>
+                          </div>
+                          <button
+                            className="member_to_invite_cancel position-absolute"
+                            onClick={() => setUserToInvite(undefined)}
+                          >
+                            <FontAwesomeIcon
+                              icon={faCircleXmark}
+                              className="fs-white home_icon"
+                            />
+                          </button>
+                        </div>
+                      )}
+                      <div
+                        className={
+                          "new_member_container" +
+                          (usersForInvitation &&
+                          usersForInvitation?.length > 0 &&
+                          invitationFilter.length > 0 &&
+                          !userToInvite
+                            ? " m-2"
+                            : "")
+                        }
+                      >
+                        {!userToInvite &&
+                          invitationFilter.length > 0 &&
+                          usersForInvitation?.map((user) => (
+                            <button
+                              type="button"
+                              key={user.id}
+                              className="new_member_selector rounded"
+                              onClick={() => setUserToInvite(user)}
+                            >
+                              <p className="p-0 m-0">{user.username}</p>
+                              <label>{user.email}</label>
+                            </button>
+                          ))}
+                      </div>
+                    </div>
+                    <button type="submit" className="btn btn-primary m-2">
+                      Potwierdź
+                    </button>
+                  </form>
                 </div>
-                <button type="submit" className="btn btn-primary m-2">
-                  Potwierdź
+                <hr />
+                <button
+                  type="button"
+                  className="btn btn-danger m-2 d-flex align-items-center"
+                  onClick={() =>
+                    modal.openModal({
+                      title: "Usuwanie konwersacji",
+                      content:
+                        "Czy napewno chcesz usunąć konwersację <b>" +
+                        conversationInfo.name +
+                        "</b>?",
+                      buttons: [
+                        buildButton("btn btn-primary", "Anuluj"),
+                        buildButton("btn btn-danger", "Potwierdź", async () => {
+                          await deleteConversationClick();
+                        }),
+                      ],
+                    })
+                  }
+                >
+                  <p className="p-0 m-0">Usuń konwersację</p>
+                  <FontAwesomeIcon icon={faTrashCan} className="ms-2" />
                 </button>
-              </form>
-            </div>
+              </>
+            )}
           </div>
         </div>
       </div>

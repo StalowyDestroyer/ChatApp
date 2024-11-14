@@ -11,6 +11,8 @@ import {
   checkIsUserInChat,
   downloadFile,
   deleteMessage,
+  deleteConversation,
+  removeUserFromConversation,
 } from "../repositories/conversationRepository";
 import { uploadChatAvatar } from "../utils/multer";
 
@@ -29,4 +31,6 @@ router.get("/isUserInConversation/:id", checkIsUserInChat);
 router.get("/messageFile/:id", downloadFile);
 //Delete
 router.delete("/message/:id", deleteMessage);
+router.delete("/:id", deleteConversation);
+router.delete("/:id/members", removeUserFromConversation);
 export default router;

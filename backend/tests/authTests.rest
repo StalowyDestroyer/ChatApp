@@ -13,8 +13,8 @@ POST http://localhost:3000/api/v1/auth/login
 Content-Type: application/json
 
 {
-    "password": "Sernik1234%",
-    "email": "sernik@s.s"
+    "password": "Password123",
+    "email": "email1@email.com"
 }
 
 ### wylogowanie
