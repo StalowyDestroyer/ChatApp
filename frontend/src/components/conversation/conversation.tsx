@@ -33,6 +33,7 @@ import { buildButton } from "../modal/Utils";
 import {
   fileInputChange,
   inviteFilterChange,
+  isAtBottom,
   loadMessagesAndSetScroll,
   scrollToBottom as scrollBottom,
   setIdForRequest,
@@ -146,7 +147,7 @@ export const Conversation: React.FC<props> = ({
     const removeListener = onEvent("message", (data: ReciveMessageData) => {
       setMessages((prev) => [...prev, data]);
 
-      if (data.user.id == user!.id) {
+      if (data.user.id == user!.id || isAtBottom(messageContainer)) {
         scrollBottom(messageContainer);
       }
     });

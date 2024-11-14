@@ -110,3 +110,11 @@ export function fileInputChange(
     console.log("All files have been read and state updated.");
   });
 }
+
+export const isAtBottom = (
+  messageContainer: React.MutableRefObject<HTMLDivElement | null>
+) => {
+  if (!messageContainer.current) return false;
+  const { scrollTop, scrollHeight, clientHeight } = messageContainer.current;
+  return scrollTop + clientHeight >= scrollHeight - 5; // 5px tolerancji
+};
