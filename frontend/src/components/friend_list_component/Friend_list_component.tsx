@@ -1,6 +1,6 @@
 import { Conversation } from "../../types/types";
 import "./Friend_list_component.css";
-import reactLogo from "../../assets/react.svg";
+import reactLogo from "../../assets/conversation.svg";
 
 interface props {
   data: Conversation;
@@ -22,13 +22,18 @@ export const Friends_list_component: React.FC<props> = ({
       onClick={() => changeConversation()}
     >
       <img src={data.imagePath || reactLogo} className="w-25" />
-      <div className="home_friend_details w-50 d-flex align-items-start px-3 flex-column gap-2">
+      <div className="home_friend_details d-flex align-items-start px-3 flex-column gap-2">
         <h5 className="home_label p-0 m-0">{data.name}</h5>
-        <label className="home_label">cos</label>
-      </div>
-      <div className="home_friend_utilities w-25 d-flex flex-column align-items-end gap-2">
-        <label className="home_label">4 min</label>
-        <label className="bg-primary home_badge">99+</label>
+        <label className="home_label">
+          {"Członkowie: "}
+          {data.conversationMembers
+            ?.map((z) => z.user.username)
+            .splice(0, 3)
+            .join(", ")}
+          {data.conversationMembers && data.conversationMembers.length > 3
+            ? " i " + (data.conversationMembers.length - 3) + " wiecej"
+            : ""}
+        </label>
       </div>
     </div>
   );

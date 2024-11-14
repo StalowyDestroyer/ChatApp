@@ -24,6 +24,7 @@ import {
   ReciveMessageData,
   UserData,
   MessageFilePreview,
+  Conversation,
 } from "../../types/types";
 import { useAuthContext } from "../../utils/authContext/useAuth";
 import keks from "../../assets/react.svg";
@@ -44,10 +45,12 @@ import { queryClient } from "../../configs/queryClient";
 interface props {
   id: string;
   setCurrentConversation: React.Dispatch<React.SetStateAction<string | null>>;
+  conversations: Conversation[] | undefined;
 }
 
-export const Conversation: React.FC<props> = ({
+export const ConversationComponent: React.FC<props> = ({
   id,
+  conversations,
   setCurrentConversation,
 }) => {
   const { emitEvent, onEvent } = useSocket();
@@ -133,8 +136,6 @@ export const Conversation: React.FC<props> = ({
   useEffect(() => {
     const event = onEvent("refresh-members", async (conversationID: string) => {
       if (conversationID == id) {
-        console.log("zzz");
-
         await refetchMembers();
       }
     });
@@ -154,6 +155,15 @@ export const Conversation: React.FC<props> = ({
 
     return removeListener;
   }, [onEvent, id, user]);
+
+  useEffect(() => {
+    emitEvent("index-chats", {
+      rooms: conversations?.map((z) => z.id),
+      userID: user?.id,
+    });
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id]);
 
   //Filtrowanie użytkowników do zaproszeń
   const { data: usersForInvitation, refetch: usersForInvitationRefetch } =
@@ -214,6 +224,13 @@ export const Conversation: React.FC<props> = ({
       setFiles([]);
     }
   }
+
+  useEffect(() => {
+    const event = onEvent("remove-message", (id: number) => {
+      setMessages((prev) => prev.filter((z) => z.message.id != id));
+    });
+    return event;
+  }, [onEvent]);
 
   function compareDates(dateString1: string, dateString2: string | null) {
     const date1 = new Date(dateString1);
@@ -323,7 +340,10 @@ export const Conversation: React.FC<props> = ({
                         messages[i - 1].message.createdAt
                       )
                     : compareDates(element.message.createdAt, null)}
-                  <Conversation_message_component data={element} />
+                  <Conversation_message_component
+                    data={element}
+                    conversationID={id}
+                  />
                 </div>
               ))
             )}

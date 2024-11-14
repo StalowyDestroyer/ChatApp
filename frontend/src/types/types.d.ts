@@ -41,6 +41,7 @@ export interface Conversation {
   createdAt: string;
   updatedAt: string;
   ownerID: number;
+  conversationMembers?: { user: UserData }[];
 }
 
 //Socket types

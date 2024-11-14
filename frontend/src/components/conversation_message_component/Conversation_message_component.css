@@ -3,6 +3,7 @@
     display: flex;
     gap: 10px;
     align-items: end;
+    height: fit-content;
 }
 .home_chat_message_container > div {
     max-width: 75%;
@@ -49,4 +50,19 @@
 }
 .message_image {
     max-width: 100%;
+}
+.delete_button_container {
+    align-self: center;
+    height: 0;
+    overflow: hidden;
+}
+.home_chat_message_container:hover > .delete_button_container {
+    height: auto;
+}
+.delete_button_container > button {
+    border: 2px solid #2f333e;
+    padding: 8px;
+    border-radius: 5px;
+    outline: none;
+    background-color: transparent;
 }

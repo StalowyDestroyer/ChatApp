@@ -1,5 +1,5 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import keks from "../../../../assets/react.svg";
+import keks from "../../../../assets/conversation.svg";
 import { faCirclePlus } from "@fortawesome/free-solid-svg-icons";
 import "./new_conversation.css";
 import { useState } from "react";

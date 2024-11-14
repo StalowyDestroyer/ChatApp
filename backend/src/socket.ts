@@ -128,8 +128,22 @@ export const socketConfig = (app: Application) => {
               io.to(key).emit("deleted", data.conversationID);
               socket.to(key).socketsLeave(data.conversationID);
             } else {
+              console.log(chalk.red("robi sie"));
+
               io.to(key).emit("refresh-members", data.conversationID);
             }
+          }
+        });
+      }
+    );
+
+    socket.on(
+      "message-delete",
+      (data: { messageID: number; conversationID: string }) => {
+        SocketMap.forEach((value, key) => {
+          if (value.Rooms.includes(data.conversationID)) {
+            io.in(key).emit("remove-message", data.messageID);
+            // console.log(chalk.red(JSON.stringify(data)));
           }
         });
       }

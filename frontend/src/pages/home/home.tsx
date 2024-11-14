@@ -22,6 +22,7 @@ import {
   getAllUserConversations,
 } from "../../services/conversationService";
 import { useEffect, useState } from "react";
+
 import { useSocket } from "../../utils/socketContext/useSocket";
 
 export const Home = () => {
@@ -29,6 +30,8 @@ export const Home = () => {
   const [currentConversation, setCurrentConversation] = useState<string | null>(
     null
   );
+
+  const [conversationFilter, setConversationFilter] = useState<string>("");
   const { onEvent } = useSocket();
 
   useAuthenticatedQuery(
@@ -59,7 +62,7 @@ export const Home = () => {
   const { data: conversations, refetch: conversationRefetch } =
     useAuthenticatedQuery(
       "userConversations",
-      async () => await getAllUserConversations(),
+      async () => await getAllUserConversations(conversationFilter),
       {
         onSuccess: (res) => {
           if (!currentConversation && res!.length > 0)
@@ -67,6 +70,10 @@ export const Home = () => {
         },
       }
     );
+
+  useEffect(() => {
+    conversationRefetch();
+  }, [conversationFilter, conversationRefetch]);
 
   useEffect(() => {
     const event = onEvent("chat-deleted", async () => {
@@ -162,6 +169,8 @@ export const Home = () => {
                 path="*"
                 element={
                   <Conversations
+                    conversationFilter={conversationFilter}
+                    setConversationFilter={setConversationFilter}
                     conversations={conversations}
                     currentConversation={currentConversation}
                     setCurrentConversation={setCurrentConversation}

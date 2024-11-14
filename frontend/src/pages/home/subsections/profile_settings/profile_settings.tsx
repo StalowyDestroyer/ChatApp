@@ -1,5 +1,5 @@
 import { useState } from "react";
-import keks from "../../../../assets/react.svg";
+import keks from "../../../../assets/user.svg";
 import { useMutation, useQuery } from "react-query";
 import { UserUpdateFormData } from "../../../../types/types";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -170,8 +170,10 @@ export const Profile_settings = () => {
                         content: `Czy napewno chcesz dolaczyc do konwersacji <b>${invitation.conversation.name}</b>?`,
                         buttons: [
                           buildButton("btn btn-danger", "Nie"),
-                          buildButton("btn btn-primary", "Tak", async () =>
-                            await acceptInvitation(invitation.id)
+                          buildButton(
+                            "btn btn-primary",
+                            "Tak",
+                            async () => await acceptInvitation(invitation.id)
                           ),
                         ],
                       })

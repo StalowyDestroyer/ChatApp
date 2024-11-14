@@ -31,15 +31,32 @@ export const createConversation = async (req: Request, res: Response) => {
 
 export const getUserConversations = async (req: Request, res: Response) => {
   try {
+    const filter = req.query.filter as string;
     const userConversations = await Conversation.findAll({
       include: [
         {
           model: User.scope("safeData"),
-          as: "members",
           where: { id: req.user?.id },
+          as: "members",
           attributes: [],
         },
+        {
+          model: ConversationMembers,
+          as: "conversationMembers",
+          include: [
+            {
+              model: User.scope("safeData"),
+            },
+          ],
+        },
       ],
+      where: filter
+        ? {
+            name: {
+              [Op.like]: `%${filter}%`,
+            },
+          }
+        : undefined,
     });
     res.status(200).json(userConversations);
   } catch (error) {
@@ -227,7 +244,19 @@ export const downloadFile = async (req: Request, res: Response) => {
     );
     res.download(filePath, file.orginalName, (error) => console.log(error));
   } catch (error) {
-    console.error("Error fetching conversation with messages:", error);
+    console.error("Error downloading file:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
+export const deleteMessage = async (req: Request, res: Response) => {
+  try {
+    await Message.destroy({
+      where: { id: req.params.id },
+    });
+    res.status(200).json({ id: req.params.id });
+  } catch (error) {
+    console.error("Error deleting message:", error);
     res.status(500).json({ error: "Internal Server Error" });
   }
 };

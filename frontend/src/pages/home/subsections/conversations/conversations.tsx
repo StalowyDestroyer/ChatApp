@@ -2,7 +2,7 @@ import { Friends_list_component } from "../../../../components/friend_list_compo
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faMagnifyingGlass } from "@fortawesome/free-solid-svg-icons";
 import "./conversations.css";
-import { Conversation as ConversationComponent } from "../../../../components/conversation/conversation";
+import { ConversationComponent as ConversationComponent } from "../../../../components/conversation/conversation";
 import { useEffect } from "react";
 import { useSocket } from "../../../../utils/socketContext/useSocket";
 import { Conversation, SocketMessagePayload } from "../../../../types/types";
@@ -13,12 +13,16 @@ interface props {
   conversations: Conversation[] | undefined;
   currentConversation: string | null;
   setCurrentConversation: React.Dispatch<React.SetStateAction<string | null>>;
+  conversationFilter: string;
+  setConversationFilter: React.Dispatch<React.SetStateAction<string>>;
 }
 
 export const Conversations: React.FC<props> = ({
   conversations,
   currentConversation,
   setCurrentConversation,
+  conversationFilter,
+  setConversationFilter,
 }) => {
   const { emitEvent, onEvent } = useSocket();
   const { user } = useAuthContext();
@@ -60,12 +64,17 @@ export const Conversations: React.FC<props> = ({
         <div className="home_searchbar_container">
           <div className="home_searchbar gap-2">
             {/* Searchbar */}
-            <button className="conversation_button">
-              <FontAwesomeIcon icon={faMagnifyingGlass} className="home_icon" />
-            </button>
-            <input type="text" placeholder="Search" />
+            <FontAwesomeIcon
+              icon={faMagnifyingGlass}
+              className="home_icon ms-3"
+            />
+            <input
+              type="text"
+              placeholder="Wyszukaj konwersacje"
+              value={conversationFilter}
+              onChange={(e) => setConversationFilter(e.target.value)}
+            />
           </div>
-          {/* Friends list */}
         </div>
         <div className="home_friend_list gap-2 d-flex flex-column">
           {conversations?.map((element) => (
@@ -82,6 +91,7 @@ export const Conversations: React.FC<props> = ({
           setCurrentConversation={setCurrentConversation}
           id={currentConversation}
           key={currentConversation}
+          conversations={conversations}
         />
       )}
     </>
