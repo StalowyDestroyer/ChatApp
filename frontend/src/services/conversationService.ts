@@ -100,3 +100,13 @@ export const downloadFile = async (id: number, name: string) => {
   link.remove();
   window.URL.revokeObjectURL(url);
 }
+
+export const deleteConversation = async (id: string) => {
+  const result = await apiClient.delete("/conversation/" + id);
+  return result.data;
+}
+
+export const removeUserFromConversation = async (conversationID: string, userID: number) => {
+  const result = await apiClient.delete("/conversation/" + conversationID + "/members?userID=" + userID);
+  return result.data;
+} 

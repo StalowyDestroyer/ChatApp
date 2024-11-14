@@ -40,6 +40,7 @@ export interface Conversation {
   imagePath?: string | null;
   createdAt: string;
   updatedAt: string;
+  ownerID: number;
 }
 
 //Socket types

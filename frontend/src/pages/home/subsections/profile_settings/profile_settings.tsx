@@ -171,7 +171,7 @@ export const Profile_settings = () => {
                         buttons: [
                           buildButton("btn btn-danger", "Nie"),
                           buildButton("btn btn-primary", "Tak", async () =>
-                            acceptInvitation(invitation.id)
+                            await acceptInvitation(invitation.id)
                           ),
                         ],
                       })

@@ -7,6 +7,8 @@ import { useEffect } from "react";
 import { useSocket } from "../../../../utils/socketContext/useSocket";
 import { Conversation, SocketMessagePayload } from "../../../../types/types";
 
+import { useAuthContext } from "../../../../utils/authContext/useAuth";
+
 interface props {
   conversations: Conversation[] | undefined;
   currentConversation: string | null;
@@ -19,7 +21,7 @@ export const Conversations: React.FC<props> = ({
   setCurrentConversation,
 }) => {
   const { emitEvent, onEvent } = useSocket();
-
+  const { user } = useAuthContext();
   useEffect(() => {
     const offNotificationEvent = onEvent(
       "notification",
@@ -42,10 +44,10 @@ export const Conversations: React.FC<props> = ({
 
   useEffect(() => {
     if (conversations && conversations.length > 0) {
-      emitEvent(
-        "index-chats",
-        conversations.map((z) => z.id)
-      );
+      emitEvent("index-chats", {
+        rooms: conversations.map((z) => z.id),
+        userID: user?.id,
+      });
       console.log("index");
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -77,6 +79,7 @@ export const Conversations: React.FC<props> = ({
       </div>
       {currentConversation && (
         <ConversationComponent
+          setCurrentConversation={setCurrentConversation}
           id={currentConversation}
           key={currentConversation}
         />

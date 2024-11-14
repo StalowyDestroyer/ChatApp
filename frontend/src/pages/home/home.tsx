@@ -21,13 +21,15 @@ import {
   checkIfUserIsInChat,
   getAllUserConversations,
 } from "../../services/conversationService";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useSocket } from "../../utils/socketContext/useSocket";
 
 export const Home = () => {
   const { logout } = useAuthContext();
   const [currentConversation, setCurrentConversation] = useState<string | null>(
     null
   );
+  const { onEvent } = useSocket();
 
   useAuthenticatedQuery(
     "isUserInChat",
@@ -53,6 +55,7 @@ export const Home = () => {
         console.log(error.response?.data.message),
     }
   );
+
   const { data: conversations, refetch: conversationRefetch } =
     useAuthenticatedQuery(
       "userConversations",
@@ -64,6 +67,27 @@ export const Home = () => {
         },
       }
     );
+
+  useEffect(() => {
+    const event = onEvent("chat-deleted", async () => {
+      await conversationRefetch();
+      setCurrentConversation(null);
+    });
+    return event;
+  }, [conversationRefetch, onEvent]);
+
+  useEffect(() => {
+    const event = onEvent("deleted", async (conversationID: string) => {
+      console.log("usunieto");
+
+      if (currentConversation == conversationID) {
+        setCurrentConversation(null);
+      }
+      await conversationRefetch();
+    });
+    return event;
+  }, [onEvent, conversationRefetch, currentConversation]);
+
   return (
     <div className="home_main_container text-center d-flex flex-column py-3 pe-3">
       <div className="row m-0 h-100">
