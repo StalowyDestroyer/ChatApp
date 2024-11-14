@@ -11,6 +11,7 @@ import { Application } from "express";
 import fs from "fs";
 import path from "path";
 import { MessageFiles } from "./models/messageFiles";
+import { Json } from "sequelize/types/utils";
 
 export const socketConfig = (app: Application) => {
   const server = http.createServer(app);
@@ -101,18 +102,34 @@ export const socketConfig = (app: Application) => {
     socket.on(
       "delete-user",
       (data: { conversationID: string; deletedUserID: number }) => {
-        SocketMap.forEach((value, key) => {
-          if (value.UserID == data.deletedUserID) {
-            SocketMap.set(key, {
-              UserID: value.UserID,
-              Rooms: value.Rooms.filter((z) => z != data.conversationID),
-            });
-            socket.to(key).emit("deleted", data.conversationID);
-          } else {
-            // console.log(chalk.bgYellow(JSON.stringify(SocketMap.get(key))));
-            // console.log(chalk.bgYellow(JSON.stringify(key)));
-            // socket.to(value.Rooms[0]).emit("dupa", data.conversationID);
-            //TODO
+        // let ToDElete = null;
+        // SocketMap.forEach((value, key) => {
+        //   if (value.UserID === data.deletedUserID) ToDElete = key;
+        // });
+
+        // if (ToDElete) {
+        //   io.to(ToDElete).emit("deleted", data.conversationID);
+        //   socket.to(ToDElete).socketsLeave(data.conversationID);
+        // }
+
+        // const notify: string[] = [];
+
+        // SocketMap.forEach((values, key) => {
+        //   if (values.Rooms.includes(data.conversationID)) notify.push(key);
+        // });
+
+        // notify.forEach((z) =>
+        //   io.to(z).emit("refresh-members", data.conversationID)
+        // );
+
+        SocketMap.forEach((values, key) => {
+          if (values.Rooms.includes(data.conversationID)) {
+            if (data.deletedUserID == values.UserID) {
+              io.to(key).emit("deleted", data.conversationID);
+              socket.to(key).socketsLeave(data.conversationID);
+            } else {
+              io.to(key).emit("refresh-members", data.conversationID);
+            }
           }
         });
       }

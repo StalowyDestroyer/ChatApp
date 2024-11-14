@@ -129,13 +129,16 @@ export const Conversation: React.FC<props> = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [canRefetchMessages, refetch, messageContainer.current]);
 
-  // useEffect(() => {
-  //   const event = onEvent("dupa", async (conversationID: string) => {
-  //     console.log("Dupsko");
-  //     if (id == conversationID) await refetchMembers();
-  //   });
-  //   return event;
-  // }, [onEvent, id, refetchMembers]);
+  useEffect(() => {
+    const event = onEvent("refresh-members", async (conversationID: string) => {
+      if (conversationID == id) {
+        console.log("zzz");
+
+        await refetchMembers();
+      }
+    });
+    return event;
+  }, [onEvent, id, refetchMembers]);
   //ToDO
 
   //Odpieranie wiadomości z socketów
@@ -404,7 +407,8 @@ export const Conversation: React.FC<props> = ({
                       <h6>{member?.email}</h6>
                     </div>
                     <div className="d-flex align-items-center">
-                      {member.id != conversationInfo.ownerID ? (
+                      {member.id != conversationInfo.ownerID &&
+                      user?.id == conversationInfo.ownerID ? (
                         <button
                           type="button"
                           className="text-danger bg-transparent fs-2 member_delete_button"
@@ -431,11 +435,13 @@ export const Conversation: React.FC<props> = ({
                         >
                           <FontAwesomeIcon icon={faTrashCan} />
                         </button>
-                      ) : (
+                      ) : member.id == conversationInfo.ownerID ? (
                         <FontAwesomeIcon
                           icon={faCrown}
                           className="text-warning fs-1"
                         />
+                      ) : (
+                        ""
                       )}
                     </div>
                   </div>
